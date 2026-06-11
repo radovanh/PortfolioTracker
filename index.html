@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pay &amp; Pray — Track &amp; Analyze Your Investments</title>
+<meta name="description" content="Track your portfolio. Analyze stocks. Hope for the best.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23111215'/><text y='46' x='8' font-size='42'>🙏</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #111215;
+  --surface:   #16181d;
+  --surface2:  #1c1e24;
+  --surface3:  #22252d;
+  --border:    #2a2d36;
+  --border2:   #363a45;
+  --accent:    #4ade80;
+  --accent-dim:#1a3a27;
+  --red:       #f87171;
+  --red-dim:   #3a1a1a;
+  --yellow:    #fbbf24;
+  --yellow-dim:#3a2f0a;
+  --blue:      #60a5fa;
+  --blue-dim:  #0a1a3a;
+  --text:      #e8eaf0;
+  --text2:     #9299ab;
+  --text3:     #5a6070;
+  --mono:      'IBM Plex Mono', monospace;
+  --sans:      'Inter', sans-serif;
+  --radius:    8px;
+  --sidebar-w: 220px;
+}
+
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ── SHELL ── */
+.shell { display: flex; height: 100vh; overflow: hidden; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.sidebar-logo {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-logo .name {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+.sidebar-logo .tagline {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 2px;
+  font-family: var(--mono);
+}
+.sidebar-section {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--text3);
+  padding: 6px 16px 4px;
+  text-transform: uppercase;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 16px;
+  font-size: 13px;
+  color: var(--text2);
+  cursor: pointer;
+  border-radius: 0;
+  transition: color 0.15s, background 0.15s;
+  position: relative;
+  white-space: nowrap;
+}
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.active { color: var(--accent); background: var(--accent-dim); }
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+}
+.nav-icon { font-size: 14px; width: 16px; text-align: center; font-family: var(--mono); }
+.nav-badge {
+  margin-left: auto;
+  font-size: 9px;
+  font-family: var(--mono);
+  background: var(--surface3);
+  color: var(--text3);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.sidebar-portfolio {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.portfolio-select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12px;
+  font-family: var(--sans);
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  appearance: none;
+}
+.portfolio-select:focus { outline: 1px solid var(--accent); }
+
+.sidebar-bottom {
+  margin-top: auto;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text2);
+}
+.user-avatar {
+  width: 28px; height: 28px;
+  background: var(--accent-dim);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ── MAIN ── */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.topbar-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.topbar-sub {
+  font-size: 12px;
+  color: var(--text3);
+  font-family: var(--mono);
+}
+.topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.topbar-btn {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-family: var(--sans);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.topbar-btn:hover { color: var(--text); border-color: var(--border2); }
+.topbar-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0a1a0f;
+  font-weight: 600;
+}
+.topbar-btn.primary:hover { opacity: 0.9; }
+
+/* ── CONTENT ── */
+.content { padding: 24px 28px; flex: 1; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── KPI ROW ── */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--border);
+}
+.kpi-card.green::after  { background: var(--accent); }
+.kpi-card.red::after    { background: var(--red); }
+.kpi-card.yellow::after { background: var(--yellow); }
+.kpi-card.blue::after   { background: var(--blue); }
+
+.kpi-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.kpi-value {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1;
+}
+.kpi-sub {
+  font-size: 11px;
+  color: var(--text3);
+  font-family: var(--mono);
+  margin-top: 6px;
+}
+.kpi-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-family: var(--mono);
+  margin-top: 5px;
+}
+.kpi-delta.up   { color: var(--accent); }
+.kpi-delta.down { color: var(--red); }
+
+/* ── GRID ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+/* ── PANEL ── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-title .icon { font-family: var(--mono); color: var(--text3); }
+.panel-actions { display: flex; gap: 6px; }
+.panel-btn {
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--text3);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+.panel-btn:hover { color: var(--text); border-color: var(--border2); }
+.panel-btn.active { color: var(--accent); border-color: var(--accent-dim); background: var(--accent-dim); }
+
+/* ── TABLE ── */
+.tbl-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+th {
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  background: var(--surface2);
+}
+th.r, td.r { text-align: right; }
+td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: nowrap;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); color: var(--text); }
+td.name { font-family: var(--sans); font-size: 13px; color: var(--text); font-weight: 500; }
+td.ticker { color: var(--text3); font-size: 11px; }
+td.up   { color: var(--accent); }
+td.down { color: var(--red); }
+td.neutral { color: var(--text3); }
+
+/* ── MINI CHART ── */
+.sparkline { height: 32px; }
+
+/* ── ALLOCATION ── */
+.alloc-list { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+.alloc-row { display: flex; align-items: center; gap: 10px; }
+.alloc-label { font-size: 12px; color: var(--text2); width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alloc-bar-bg { flex: 1; height: 4px; background: var(--surface3); border-radius: 2px; }
+.alloc-bar { height: 4px; border-radius: 2px; }
+.alloc-pct { font-size: 11px; font-family: var(--mono); color: var(--text3); width: 36px; text-align: right; }
+
+/* ── MINI STATS ── */
+.mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.mini-stat {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+.mini-stat:nth-child(even) { border-right: none; }
+.mini-stat:nth-last-child(-n+2) { border-bottom: none; }
+.mini-stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; }
+.mini-stat-value { font-size: 16px; font-family: var(--mono); font-weight: 600; color: var(--text); }
+.mini-stat-value.up { color: var(--accent); }
+.mini-stat-value.down { color: var(--red); }
+.mini-stat-value.muted { color: var(--text2); font-size: 13px; }
+
+/* ── CHART AREA ── */
+.chart-area { padding: 16px 18px; }
+.chart-placeholder {
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* ── DIVIDEND ROW ── */
+.div-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.div-row:last-child { border-bottom: none; }
+.div-name { color: var(--text); font-weight: 500; }
+.div-date { color: var(--text3); font-family: var(--mono); }
+.div-amt  { font-family: var(--mono); color: var(--accent); }
+
+/* ── TERMINAL ── */
+.terminal-line {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text2);
+  padding: 3px 0;
+  display: flex;
+  gap: 12px;
+}
+.terminal-line .key { color: var(--text3); min-width: 160px; }
+.terminal-line .val { color: var(--text); }
+.terminal-line .val.up { color: var(--accent); }
+.terminal-line .val.down { color: var(--red); }
+.terminal-line .val.yellow { color: var(--yellow); }
+
+/* ── EMPTY ── */
+.empty {
+  padding: 40px;
+  text-align: center;
+  color: var(--text3);
+  font-size: 13px;
+  font-family: var(--mono);
+}
+
+/* ── TABS ── */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 0 18px;
+}
+.tab {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 10px 12px 9px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.15s;
+}
+.tab:hover { color: var(--text2); }
+.tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+/* ── SECTION LABEL ── */
+.section-eyebrow {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-eyebrow::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── SVG CHART HELPER ── */
+svg text { font-family: var(--mono); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .sidebar { width: 56px; min-width: 56px; }
+  .sidebar-logo .name, .sidebar-logo .tagline,
+  .sidebar-label, .nav-item span.nav-text, .sidebar-user span,
+  .sidebar-portfolio, .sidebar-bottom .user-meta { display: none; }
+  .nav-item { padding: 10px; justify-content: center; }
+  .content { padding: 16px; }
+  .kpi-row { grid-template-columns: 1fr 1fr; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="name">Pay &amp; Pray</div>
+      <div class="tagline">// hope for the best</div>
+    </div>
+
+    <div class="sidebar-portfolio" style="padding:12px 16px;">
+      <select class="portfolio-select" onchange="switchPortfolio(this.value)">
+        <option>Main Portfolio</option>
+        <option>Trading 212 ISA</option>
+        <option>Crypto (regret)</option>
+      </select>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <div class="nav-item active" onclick="nav('dashboard', this)">
+        <span class="nav-icon">$</span>
+        <span class="nav-text">Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="nav('performance', this)">
+        <span class="nav-icon">#</span>
+        <span class="nav-text">Performance</span>
+      </div>
+      <div class="nav-item" onclick="nav('dividends', this)">
+        <span class="nav-icon">%</span>
+        <span class="nav-text">Dividends</span>
+        <span class="nav-badge">3</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Analysis</div>
+      <div class="nav-item" onclick="nav('taxes', this)">
+        <span class="nav-icon">&gt;</span>
+        <span class="nav-text">FIFO Taxes</span>
+      </div>
+      <div class="nav-item" onclick="nav('terminal', this)">
+        <span class="nav-icon">~</span>
+        <span class="nav-text">Terminal</span>
+      </div>
+      <div class="nav-item" onclick="nav('cash', this)">
+        <span class="nav-icon">*</span>
+        <span class="nav-text">Cash &amp; Brokers</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Data</div>
+      <div class="nav-item" onclick="nav('import', this)">
+        <span class="nav-icon">↑</span>
+        <span class="nav-text">Import CSV</span>
+      </div>
+      <div class="nav-item" onclick="nav('settings', this)">
+        <span class="nav-icon">⚙</span>
+        <span class="nav-text">Settings</span>
+      </div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-user">
+        <div class="user-avatar">R</div>
+        <span class="user-meta" style="font-size:12px;color:var(--text2);">radovan</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-sub" id="topbar-sub">Main Portfolio · EUR · as of today</div>
+      <div class="topbar-right">
+        <select style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:11px;font-family:var(--mono);padding:4px 8px;border-radius:var(--radius);cursor:pointer;appearance:none;">
+          <option>EUR</option><option>USD</option><option>CZK</option><option>GBP</option>
+        </select>
+        <button class="topbar-btn" onclick="nav('import', document.querySelector('.nav-item:nth-child(7))'))">↑ Import CSV</button>
+        <button class="topbar-btn primary">+ Add Trade</button>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ── DASHBOARD ── -->
+      <div class="page active" id="page-dashboard">
+        <div class="kpi-row">
+          <div class="kpi-card green">
+            <div class="kpi-label"><span>Portfolio Value</span></div>
+            <div class="kpi-value">€24,318.42</div>
+            <div class="kpi-delta up">▲ 3.24% today</div>
+            <div class="kpi-sub">+€763.20 today</div>
+          </div>
+          <div class="kpi-card red">
+            <div class="kpi-label"><span>Total Invested</span></div>
+            <div class="kpi-value">€21,450.00</div>
+            <div class="kpi-sub">across 14 positions</div>
+          </div>
+          <div class="kpi-card green">
+            <div class="kpi-label"><span>Unrealised P&amp;L</span></div>
+            <div class="kpi-value">+€2,868.42</div>
+            <div class="kpi-delta up">▲ +13.37% total</div>
+          </div>
+          <div class="kpi-card yellow">
+            <div class="kpi-label"><span>Realised P&amp;L (YTD)</span></div>
+            <div class="kpi-value">+€1,102.88</div>
+            <div class="kpi-sub">taxable in SK §9 ZDP</div>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <!-- Holdings table -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title"><span class="icon">$</span> Holdings</div>
+              <div class="panel-actions">
+                <button class="panel-btn active">Value</button>
+                <button class="panel-btn">P&amp;L</button>
+                <button class="panel-btn">Weight</button>
+              </div>
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Ticker</th>
+                    <th>Name</th>
+                    <th class="r">Qty</th>
+                    <th class="r">Avg Cost</th>
+                    <th class="r">Price</th>
+                    <th class="r">Value</th>
+                    <th class="r">P&amp;L %</th>
+                  </tr>
+                </thead>
+                <tbody id="holdings-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Allocation -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title"><span class="icon">#</span> Allocation</div>
+            </div>
+            <!-- donut -->
+            <div style="padding:16px 18px; display:flex; justify-content:center;">
+              <svg width="130" height="130" viewBox="0 0 130 130" id="donut-svg"></svg>
+            </div>
+            <div class="alloc-list" id="alloc-list"></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <!-- Performance mini chart -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title"><span class="icon">#</span> Portfolio vs S&amp;P 500</div>
+              <div class="panel-actions">
+                <button class="panel-btn active">1M</button>
+                <button class="panel-btn">3M</button>
+                <button class="panel-btn">YTD</button>
+                <button class="panel-btn">1Y</button>
+              </div>
+            </div>
+            <div class="chart-area">
+              <svg width="100%" height="160" id="perf-chart" style="overflow:visible;"></svg>
+            </div>
+            <div class="mini-stats">
+              <div class="mini-stat">
+                <div class="mini-stat-label">TWR</div>
+                <div class="mini-stat-value up">+11.4%</div>
+              </div>
+              <div class="mini-stat">
+                <div class="mini-stat-label">MWRR</div>
+                <div class="mini-stat-value up">+9.8%</div>
+              </div>
+              <div class="mini-stat">
+                <div class="mini-stat-label">S&amp;P 500</div>
+                <div class="mini-stat-value up">+8.2%</div>
+              </div>
+              <div class="mini-stat">
+                <div class="mini-stat-label">Alpha</div>
+                <div class="mini-stat-value up">+3.2%</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dividends upcoming -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title"><span class="icon">%</span> Upcoming Dividends</div>
+              <button class="panel-btn" onclick="nav('dividends', null)">All →</button>
+            </div>
+            <div id="upcoming-divs"></div>
+            <div class="panel-header" style="border-top:1px solid var(--border); border-bottom:none; margin-top:0;">
+              <div class="panel-title" style="font-size:10px;">YTD received</div>
+              <div style="font-family:var(--mono);font-size:14px;color:var(--accent);">€218.44</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PERFORMANCE ── -->
+      <div class="page" id="page-performance">
+        <div class="kpi-row">
+          <div class="kpi-card green">
+            <div class="kpi-label">TWR (YTD)</div>
+            <div class="kpi-value">+11.4%</div>
+            <div class="kpi-sub">time-weighted</div>
+          </div>
+          <div class="kpi-card green">
+            <div class="kpi-label">MWRR (YTD)</div>
+            <div class="kpi-value">+9.8%</div>
+            <div class="kpi-sub">money-weighted</div>
+          </div>
+          <div class="kpi-card blue">
+            <div class="kpi-label">S&amp;P 500 (YTD)</div>
+            <div class="kpi-value">+8.2%</div>
+            <div class="kpi-sub">benchmark</div>
+          </div>
+          <div class="kpi-card yellow">
+            <div class="kpi-label">Volatility</div>
+            <div class="kpi-value">14.2%</div>
+            <div class="kpi-sub">annualised std dev</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Portfolio vs S&amp;P 500 (YTD)</div>
+            <div class="panel-actions">
+              <button class="panel-btn">1M</button>
+              <button class="panel-btn">3M</button>
+              <button class="panel-btn active">YTD</button>
+              <button class="panel-btn">1Y</button>
+              <button class="panel-btn">All</button>
+            </div>
+          </div>
+          <div class="chart-area">
+            <svg width="100%" height="220" id="perf-chart2" style="overflow:visible;"></svg>
+          </div>
+        </div>
+        <div class="section-eyebrow" style="margin-top:20px;">Per-position performance</div>
+        <div class="panel">
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ticker</th>
+                  <th>Name</th>
+                  <th class="r">Buy date</th>
+                  <th class="r">Cost basis</th>
+                  <th class="r">Current</th>
+                  <th class="r">P&amp;L €</th>
+                  <th class="r">P&amp;L %</th>
+                  <th class="r">Contribution</th>
+                </tr>
+              </thead>
+              <tbody id="perf-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DIVIDENDS ── -->
+      <div class="page" id="page-dividends">
+        <div class="kpi-row">
+          <div class="kpi-card green">
+            <div class="kpi-label">YTD Received</div>
+            <div class="kpi-value">€218.44</div>
+          </div>
+          <div class="kpi-card yellow">
+            <div class="kpi-label">Upcoming (30d)</div>
+            <div class="kpi-value">€84.20</div>
+          </div>
+          <div class="kpi-card blue">
+            <div class="kpi-label">Yield on Cost</div>
+            <div class="kpi-value">2.14%</div>
+          </div>
+          <div class="kpi-card blue">
+            <div class="kpi-label">Projected Annual</div>
+            <div class="kpi-value">€520.00</div>
+          </div>
+        </div>
+        <div class="section-eyebrow">Upcoming</div>
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Ticker</th><th>Ex-Date</th><th>Pay Date</th><th class="r">Shares</th><th class="r">Div/Share</th><th class="r">Est. Total</th></tr></thead>
+              <tbody id="div-upcoming-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="section-eyebrow">Received history</div>
+        <div class="panel">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Ticker</th><th>Name</th><th class="r">Amount</th><th class="r">Tax withheld</th><th class="r">Net</th></tr></thead>
+              <tbody id="div-history-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── FIFO TAXES ── -->
+      <div class="page" id="page-taxes">
+        <div class="kpi-row">
+          <div class="kpi-card yellow">
+            <div class="kpi-label">Realised Gains (YTD)</div>
+            <div class="kpi-value">€1,102.88</div>
+            <div class="kpi-sub">lots closed this year</div>
+          </div>
+          <div class="kpi-card red">
+            <div class="kpi-label">Estimated Tax (SK)</div>
+            <div class="kpi-value">€77.20</div>
+            <div class="kpi-sub">7% flat, §9 ZDP</div>
+          </div>
+          <div class="kpi-card green">
+            <div class="kpi-label">Exempt (§9 ZDP)</div>
+            <div class="kpi-value">€0.00</div>
+            <div class="kpi-sub">held &gt; 1yr, threshold met</div>
+          </div>
+          <div class="kpi-card blue">
+            <div class="kpi-label">Lots Closed</div>
+            <div class="kpi-value">12</div>
+          </div>
+        </div>
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-header">
+            <div class="panel-title">&gt; FIFO Lot Matching</div>
+            <div class="panel-actions">
+              <button class="panel-btn" style="color:var(--accent);">↓ Export CSV</button>
+              <button class="panel-btn" style="color:var(--accent);">↓ Export PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ticker</th>
+                  <th>Buy Date</th>
+                  <th>Sell Date</th>
+                  <th class="r">Qty</th>
+                  <th class="r">Avg Cost</th>
+                  <th class="r">Sell Price</th>
+                  <th class="r">Gain/Loss</th>
+                  <th class="r">Held (days)</th>
+                  <th class="r">§9 Exempt</th>
+                </tr>
+              </thead>
+              <tbody id="tax-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel" style="background:var(--yellow-dim); border-color: #5a4510;">
+          <div style="padding:14px 18px; font-size:12px; color:var(--yellow); font-family:var(--mono);">
+            ⚠ This is not tax advice. Consult a real human who will charge you for it.
+            §9 ZDP exemption: securities held &gt;1 year, annual realised gains ≤ €500 exempt from tax.
+            Above €500, the full amount is taxable at 7% (base rate).
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TERMINAL ── -->
+      <div class="page" id="page-terminal">
+        <div style="display:flex; gap:12px; margin-bottom:16px;">
+          <input id="terminal-input" type="text" placeholder="search ticker... AAPL, MSFT, VOO"
+            style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:10px 14px;border-radius:var(--radius);outline:none;"
+            onkeydown="if(event.key==='Enter') terminalSearch()"
+            onfocus="this.style.borderColor='var(--accent)'"
+            onblur="this.style.borderColor='var(--border)'"
+          >
+          <button class="topbar-btn primary" onclick="terminalSearch()">→ Look up</button>
+        </div>
+        <div id="terminal-result">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">~ AAPL — Apple Inc.</div>
+              <div style="font-family:var(--mono);font-size:18px;color:var(--text);">$189.30 <span style="color:var(--accent);font-size:13px;">▲ +1.24%</span></div>
+            </div>
+            <div style="padding:16px 18px; display:grid; grid-template-columns:1fr 1fr; gap:0;" id="terminal-data"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CASH & BROKERS ── -->
+      <div class="page" id="page-cash">
+        <div class="kpi-row">
+          <div class="kpi-card green">
+            <div class="kpi-label">Total Cash</div>
+            <div class="kpi-value">€3,210.00</div>
+            <div class="kpi-sub">across all accounts</div>
+          </div>
+          <div class="kpi-card blue">
+            <div class="kpi-label">Net Worth (excl. RE)</div>
+            <div class="kpi-value">€27,528.42</div>
+            <div class="kpi-sub">portfolio + cash</div>
+          </div>
+          <div class="kpi-card yellow">
+            <div class="kpi-label">Pending Deposits</div>
+            <div class="kpi-value">€500.00</div>
+          </div>
+          <div class="kpi-card red">
+            <div class="kpi-label">Fees (YTD)</div>
+            <div class="kpi-value">€14.20</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">* Brokerage Accounts</div>
+            <button class="panel-btn">+ Add account</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Broker</th><th>Account</th><th>Currency</th><th class="r">Cash Balance</th><th class="r">Portfolio Value</th><th class="r">Total</th></tr></thead>
+              <tbody id="cash-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── IMPORT ── -->
+      <div class="page" id="page-import">
+        <div class="panel" style="max-width:600px;">
+          <div class="panel-header">
+            <div class="panel-title">↑ Import CSV</div>
+          </div>
+          <div style="padding:24px 18px; display:flex; flex-direction:column; gap:16px;">
+            <div style="font-size:12px;color:var(--text2);">Supports Trading 212 CSV export format (Transactions.csv). Drag &amp; drop or click to select.</div>
+            <div id="drop-zone" style="border:2px dashed var(--border);border-radius:var(--radius);padding:48px;text-align:center;cursor:pointer;transition:all 0.15s;"
+              onclick="document.getElementById('csv-file').click()"
+              ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+              ondragleave="this.style.borderColor='var(--border)'"
+              ondrop="handleDrop(event)"
+            >
+              <div style="font-size:32px;margin-bottom:12px;">📄</div>
+              <div style="font-family:var(--mono);font-size:13px;color:var(--text3);">Transactions.csv</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:6px;">T212 export · max 10 MB</div>
+            </div>
+            <input type="file" id="csv-file" accept=".csv" style="display:none;" onchange="handleFileSelect(this)">
+            <div id="import-status" style="font-family:var(--mono);font-size:12px;color:var(--text3);"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS ── -->
+      <div class="page" id="page-settings">
+        <div class="panel" style="max-width:560px;">
+          <div class="tabs">
+            <div class="tab active" onclick="settingsTab(this,'stab-general')">General</div>
+            <div class="tab" onclick="settingsTab(this,'stab-currency')">Currency</div>
+            <div class="tab" onclick="settingsTab(this,'stab-tax')">Tax</div>
+          </div>
+          <div id="stab-general" style="padding:20px 18px; display:flex; flex-direction:column; gap:14px;">
+            <div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">Display name</div>
+              <input type="text" value="radovan" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;padding:7px 10px;border-radius:var(--radius);width:100%;font-family:var(--sans);">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">Default portfolio</div>
+              <select style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;padding:7px 10px;border-radius:var(--radius);width:100%;font-family:var(--sans);">
+                <option>Main Portfolio</option>
+                <option>Trading 212 ISA</option>
+              </select>
+            </div>
+          </div>
+          <div id="stab-currency" style="padding:20px 18px; display:none; flex-direction:column; gap:14px;">
+            <div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">Base currency</div>
+              <select style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;padding:7px 10px;border-radius:var(--radius);width:100%;font-family:var(--sans);">
+                <option>EUR</option><option>CZK</option><option>USD</option><option>GBP</option>
+              </select>
+            </div>
+            <div style="font-size:11px;color:var(--text3);font-family:var(--mono);">Rates are fetched from ECB daily. CZK, EUR, USD, GBP — because losing money in one currency wasn't enough.</div>
+          </div>
+          <div id="stab-tax" style="padding:20px 18px; display:none; flex-direction:column; gap:14px;">
+            <div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">Tax jurisdiction</div>
+              <select style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;padding:7px 10px;border-radius:var(--radius);width:100%;font-family:var(--sans);">
+                <option>Slovakia (§9 ZDP)</option>
+                <option>Czech Republic</option>
+                <option>None / Manual</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">Tax rate</div>
+              <input type="text" value="7%" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;padding:7px 10px;border-radius:var(--radius);width:100%;font-family:var(--mono);">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">§9 ZDP exemption threshold (€)</div>
+              <input type="text" value="500" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;padding:7px 10px;border-radius:var(--radius);width:100%;font-family:var(--mono);">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div>
+
+<script>
+// ── DATA ──
+const holdings = [
+  { ticker:'VWCE', name:'Vanguard FTSE All-World', qty:28.4,  cost:88.12, price:95.40, currency:'EUR' },
+  { ticker:'AAPL', name:'Apple Inc.',              qty:10,    cost:151.20, price:189.30, currency:'USD' },
+  { ticker:'MSFT', name:'Microsoft Corp.',         qty:5,     cost:310.00, price:415.80, currency:'USD' },
+  { ticker:'XDWD', name:'iShares MSCI World',      qty:42,    cost:74.10,  price:81.22, currency:'EUR' },
+  { ticker:'2B76', name:'iShares Core MSCI EM',    qty:30,    cost:24.50,  price:23.80, currency:'EUR' },
+  { ticker:'BRK.B',name:'Berkshire Hathaway B',    qty:3,     cost:320.00, price:411.00, currency:'USD' },
+  { ticker:'IWDA', name:'iShares Core MSCI World', qty:18,    cost:76.20,  price:86.90, currency:'EUR' },
+];
+
+const divUpcoming = [
+  { ticker:'VWCE', exDate:'2026-06-20', payDate:'2026-07-05', shares:28.4, divPerShare:0.42 },
+  { ticker:'AAPL', exDate:'2026-07-04', payDate:'2026-07-18', shares:10,   divPerShare:0.25 },
+  { ticker:'MSFT', exDate:'2026-07-10', payDate:'2026-07-25', shares:5,    divPerShare:0.75 },
+];
+const divHistory = [
+  { date:'2026-04-05', ticker:'VWCE', name:'Vanguard FTSE All-World', amount:11.93, tax:1.79 },
+  { date:'2026-03-20', ticker:'AAPL', name:'Apple Inc.',              amount:2.50,  tax:0.38 },
+  { date:'2026-02-14', ticker:'MSFT', name:'Microsoft Corp.',         amount:3.75,  tax:0.56 },
+  { date:'2026-01-08', ticker:'VWCE', name:'Vanguard FTSE All-World', amount:11.20, tax:1.68 },
+];
+const taxLots = [
+  { ticker:'AAPL', buyDate:'2024-11-03', sellDate:'2026-01-15', qty:5, avgCost:145.00, sellPrice:185.00, held:439, exempt:true },
+  { ticker:'MSFT', buyDate:'2025-03-10', sellDate:'2026-02-28', qty:2, avgCost:315.00, sellPrice:400.00, held:355, exempt:false },
+  { ticker:'VOO',  buyDate:'2025-06-01', sellDate:'2026-05-10', qty:3, avgCost:480.00, sellPrice:530.00, held:343, exempt:false },
+];
+const cashAccounts = [
+  { broker:'Trading 212', account:'ISA', currency:'GBP', cash:480.00, portfolio:8200.00 },
+  { broker:'Trading 212', account:'Invest', currency:'EUR', cash:1200.00, portfolio:16118.42 },
+  { broker:'Revolut',     account:'Stocks', currency:'EUR', cash:1530.00, portfolio:0 },
+];
+const terminalData = {
+  'P/E Ratio': '29.4',
+  'EPS (TTM)': '$6.44',
+  'Revenue (TTM)': '$391.0B',
+  'Net Income': '$99.8B',
+  'Gross Margin': '46.2%',
+  'Div Yield': '0.52%',
+  'Market Cap': '$2.92T',
+  '52W High': '$201.80',
+  '52W Low': '$164.08',
+  'Beta': '1.24',
+  'ROE': '147.9%',
+  'Debt/Equity': '1.87',
+};
+
+// ── NAV ──
+const pageTitles = {
+  dashboard:'Dashboard', performance:'Performance', dividends:'Dividends',
+  taxes:'FIFO Taxes', terminal:'Terminal', cash:'Cash & Brokers',
+  import:'Import CSV', settings:'Settings'
+};
+function nav(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('topbar-title').textContent = pageTitles[page] || page;
+}
+
+// ── RENDER HOLDINGS ──
+function renderHoldings() {
+  const tbody = document.getElementById('holdings-tbody');
+  tbody.innerHTML = holdings.map(h => {
+    const value = h.qty * h.price;
+    const pl    = (h.price - h.cost) * h.qty;
+    const plPct = ((h.price / h.cost) - 1) * 100;
+    const cls   = plPct >= 0 ? 'up' : 'down';
+    const sign  = plPct >= 0 ? '+' : '';
+    return `<tr>
+      <td class="name">${h.ticker}</td>
+      <td style="color:var(--text2);font-family:var(--sans);font-size:12px;">${h.name}</td>
+      <td class="r">${h.qty.toFixed(2)}</td>
+      <td class="r">${h.cost.toFixed(2)}</td>
+      <td class="r">${h.price.toFixed(2)}</td>
+      <td class="r" style="color:var(--text);">€${value.toFixed(0)}</td>
+      <td class="r ${cls}">${sign}${plPct.toFixed(2)}%</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── ALLOCATION ──
+function renderAlloc() {
+  const total = holdings.reduce((s,h) => s + h.qty*h.price, 0);
+  const colors = ['#4ade80','#60a5fa','#fbbf24','#f87171','#a78bfa','#34d399','#fb923c'];
+  const sorted = [...holdings].sort((a,b) => b.qty*b.price - a.qty*a.price);
+
+  // Donut SVG
+  const cx=65, cy=65, r=50, iR=34;
+  let angle = -Math.PI/2;
+  let paths = '';
+  sorted.forEach((h,i) => {
+    const pct = (h.qty*h.price) / total;
+    const sweep = pct * 2 * Math.PI;
+    const x1=cx+r*Math.cos(angle), y1=cy+r*Math.sin(angle);
+    angle += sweep;
+    const x2=cx+r*Math.cos(angle), y2=cy+r*Math.sin(angle);
+    const ix1=cx+iR*Math.cos(angle-sweep), iy1=cy+iR*Math.sin(angle-sweep);
+    const ix2=cx+iR*Math.cos(angle), iy2=cy+iR*Math.sin(angle);
+    const large = sweep > Math.PI ? 1 : 0;
+    paths += `<path d="M${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} L${ix2},${iy2} A${iR},${iR} 0 ${large},0 ${ix1},${iy1} Z"
+      fill="${colors[i%colors.length]}" opacity="0.9"/>`;
+  });
+  document.getElementById('donut-svg').innerHTML = paths +
+    `<text x="65" y="60" text-anchor="middle" font-size="10" fill="var(--text3)">Portfolio</text>
+     <text x="65" y="75" text-anchor="middle" font-size="11" fill="var(--text)" font-weight="600">€24,318</text>`;
+
+  // Bar list
+  const list = document.getElementById('alloc-list');
+  list.innerHTML = sorted.slice(0,6).map((h,i) => {
+    const pct = ((h.qty*h.price) / total * 100).toFixed(1);
+    return `<div class="alloc-row">
+      <div class="alloc-label">${h.ticker}</div>
+      <div class="alloc-bar-bg"><div class="alloc-bar" style="width:${pct}%;background:${colors[i%colors.length]}"></div></div>
+      <div class="alloc-pct">${pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+// ── PERFORMANCE CHART ──
+function drawPerfChart(svgId, h=160) {
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+  const W = svg.clientWidth || 500;
+  const pts = 60;
+  const portData  = Array.from({length:pts}, (_,i) => 1 + 0.001*i + 0.008*Math.sin(i*0.4) + 0.0003*i*Math.sin(i*0.1));
+  const spData    = Array.from({length:pts}, (_,i) => 1 + 0.0008*i + 0.005*Math.cos(i*0.3));
+  const pad = {l:10, r:10, t:10, b:24};
+  const cw = W - pad.l - pad.r, ch = h - pad.t - pad.b;
+  const allV = [...portData,...spData];
+  const mn = Math.min(...allV), mx = Math.max(...allV);
+  const sx = i => pad.l + (i/(pts-1))*cw;
+  const sy = v => pad.t + ch - ((v-mn)/(mx-mn))*ch;
+  const line = arr => arr.map((v,i)=>`${i?'L':'M'}${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(' ');
+  const fill = arr => line(arr) + ` L${sx(pts-1)},${pad.t+ch} L${pad.l},${pad.t+ch} Z`;
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="g1_${svgId}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#4ade80" stop-opacity="0.25"/>
+        <stop offset="100%" stop-color="#4ade80" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="${fill(portData)}" fill="url(#g1_${svgId})"/>
+    <path d="${line(portData)}" fill="none" stroke="#4ade80" stroke-width="1.5"/>
+    <path d="${line(spData)}"   fill="none" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.6"/>
+    <text x="${pad.l+4}" y="${h-6}" font-size="9" fill="var(--text3)">Portfolio</text>
+    <text x="${pad.l+60}" y="${h-6}" font-size="9" fill="#60a5fa" opacity="0.7">S&amp;P 500</text>
+  `;
+}
+
+// ── DIVIDENDS ──
+function renderDividends() {
+  const upcoming = document.getElementById('upcoming-divs');
+  upcoming.innerHTML = divUpcoming.map(d => {
+    const total = (d.shares * d.divPerShare).toFixed(2);
+    return `<div class="div-row">
+      <span class="div-name">${d.ticker}</span>
+      <span class="div-date">${d.exDate}</span>
+      <span class="div-amt">€${total}</span>
+    </div>`;
+  }).join('');
+
+  // full page
+  const uT = document.getElementById('div-upcoming-tbody');
+  if (uT) uT.innerHTML = divUpcoming.map(d => `<tr>
+    <td class="name">${d.ticker}</td>
+    <td>${d.exDate}</td><td>${d.payDate}</td>
+    <td class="r">${d.shares}</td>
+    <td class="r">€${d.divPerShare.toFixed(2)}</td>
+    <td class="r up">€${(d.shares*d.divPerShare).toFixed(2)}</td>
+  </tr>`).join('');
+
+  const hT = document.getElementById('div-history-tbody');
+  if (hT) hT.innerHTML = divHistory.map(d => `<tr>
+    <td>${d.date}</td>
+    <td class="name">${d.ticker}</td>
+    <td style="color:var(--text2);font-family:var(--sans)">${d.name}</td>
+    <td class="r up">€${d.amount.toFixed(2)}</td>
+    <td class="r down">€${d.tax.toFixed(2)}</td>
+    <td class="r up">€${(d.amount-d.tax).toFixed(2)}</td>
+  </tr>`).join('');
+}
+
+// ── TAX ──
+function renderTax() {
+  const tb = document.getElementById('tax-tbody');
+  if (tb) tb.innerHTML = taxLots.map(l => {
+    const gain = (l.sellPrice - l.avgCost) * l.qty;
+    const cls = gain >= 0 ? 'up' : 'down';
+    return `<tr>
+      <td class="name">${l.ticker}</td>
+      <td>${l.buyDate}</td><td>${l.sellDate}</td>
+      <td class="r">${l.qty}</td>
+      <td class="r">$${l.avgCost.toFixed(2)}</td>
+      <td class="r">$${l.sellPrice.toFixed(2)}</td>
+      <td class="r ${cls}">${gain>=0?'+':''}€${gain.toFixed(2)}</td>
+      <td class="r">${l.held}</td>
+      <td class="r" style="color:${l.exempt?'var(--accent)':'var(--red)'}">${l.exempt?'✓ Yes':'✗ No'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── PERFORMANCE PAGE ──
+function renderPerf() {
+  const tb = document.getElementById('perf-tbody');
+  if (tb) tb.innerHTML = holdings.map(h => {
+    const value = h.qty * h.price;
+    const cost  = h.qty * h.cost;
+    const pl    = value - cost;
+    const plPct = (pl/cost*100);
+    const cls   = plPct >= 0 ? 'up' : 'down';
+    return `<tr>
+      <td class="name">${h.ticker}</td>
+      <td style="color:var(--text2);font-family:var(--sans);font-size:12px;">${h.name}</td>
+      <td class="r neutral">—</td>
+      <td class="r">€${cost.toFixed(0)}</td>
+      <td class="r">€${value.toFixed(0)}</td>
+      <td class="r ${cls}">${pl>=0?'+':''}€${pl.toFixed(0)}</td>
+      <td class="r ${cls}">${pl>=0?'+':''}${plPct.toFixed(2)}%</td>
+      <td class="r up">+${(value/24318*11.4).toFixed(2)}%</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── CASH ──
+function renderCash() {
+  const tb = document.getElementById('cash-tbody');
+  if (tb) tb.innerHTML = cashAccounts.map(a => `<tr>
+    <td class="name">${a.broker}</td>
+    <td style="color:var(--text2)">${a.account}</td>
+    <td style="color:var(--text3);font-family:var(--mono)">${a.currency}</td>
+    <td class="r">€${a.cash.toFixed(2)}</td>
+    <td class="r up">€${a.portfolio.toFixed(2)}</td>
+    <td class="r" style="color:var(--text);">€${(a.cash+a.portfolio).toFixed(2)}</td>
+  </tr>`).join('');
+}
+
+// ── TERMINAL ──
+function renderTerminal() {
+  const el = document.getElementById('terminal-data');
+  if (!el) return;
+  const entries = Object.entries(terminalData);
+  el.innerHTML = entries.map(([k,v]) => `
+    <div class="terminal-line" style="border-bottom:1px solid var(--border);padding:10px 18px;">
+      <span class="key">${k}</span>
+      <span class="val">${v}</span>
+    </div>`).join('');
+}
+
+function terminalSearch() {
+  const q = document.getElementById('terminal-input').value.trim().toUpperCase() || 'AAPL';
+  document.querySelector('#terminal-result .panel-title').textContent = `~ ${q} — (demo data)`;
+  renderTerminal();
+}
+
+// ── SETTINGS TABS ──
+function settingsTab(el, tabId) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['stab-general','stab-currency','stab-tax'].forEach(id => {
+    const el2 = document.getElementById(id);
+    if (el2) el2.style.display = id===tabId ? 'flex' : 'none';
+  });
+}
+
+// ── FILE IMPORT ──
+function handleDrop(e) {
+  e.preventDefault();
+  e.currentTarget.style.borderColor = 'var(--border)';
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+}
+function handleFileSelect(input) {
+  if (input.files[0]) processFile(input.files[0]);
+}
+function processFile(file) {
+  document.getElementById('import-status').textContent = `✓ Loaded: ${file.name} (${(file.size/1024).toFixed(1)} KB) — parsing…`;
+  setTimeout(() => {
+    document.getElementById('import-status').textContent = `✓ ${file.name} — 142 transactions imported. FIFO lots recalculated.`;
+  }, 800);
+}
+
+// ── PORTFOLIO SWITCH ──
+function switchPortfolio(val) { /* in real app: reload data */ }
+
+// ── PANEL TAB BTN TOGGLE ──
+document.querySelectorAll('.panel-actions').forEach(group => {
+  group.querySelectorAll('.panel-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      group.querySelectorAll('.panel-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+});
+
+// ── INIT ──
+function init() {
+  renderHoldings();
+  renderAlloc();
+  renderDividends();
+  renderTax();
+  renderPerf();
+  renderCash();
+  renderTerminal();
+  setTimeout(() => {
+    drawPerfChart('perf-chart', 160);
+    drawPerfChart('perf-chart2', 220);
+  }, 50);
+}
+window.addEventListener('load', init);
+window.addEventListener('resize', () => {
+  drawPerfChart('perf-chart', 160);
+  drawPerfChart('perf-chart2', 220);
+});
+</script>
+</body>
+</html>
