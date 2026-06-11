@@ -4,1306 +4,1481 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pay &amp; Pray — Track &amp; Analyze Your Investments</title>
-<meta name="description" content="Track your portfolio. Analyze stocks. Hope for the best.">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23111215'/><text y='46' x='8' font-size='42'>🙏</text></svg>">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23fff'/><text y='46' x='8' font-size='42'>🙏</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
-  --bg:        #111215;
-  --surface:   #16181d;
-  --surface2:  #1c1e24;
-  --surface3:  #22252d;
-  --border:    #2a2d36;
-  --border2:   #363a45;
-  --accent:    #4ade80;
-  --accent-dim:#1a3a27;
-  --red:       #f87171;
-  --red-dim:   #3a1a1a;
-  --yellow:    #fbbf24;
-  --yellow-dim:#3a2f0a;
-  --blue:      #60a5fa;
-  --blue-dim:  #0a1a3a;
-  --text:      #e8eaf0;
-  --text2:     #9299ab;
-  --text3:     #5a6070;
-  --mono:      'IBM Plex Mono', monospace;
-  --sans:      'Inter', sans-serif;
-  --radius:    8px;
-  --sidebar-w: 220px;
+  --bg:       #f6f6f4;
+  --surface:  #ffffff;
+  --surface2: #f2f2f0;
+  --border:   #e5e5e2;
+  --border2:  #d0d0cc;
+  --green:    #3d8b6e;
+  --green-bg: #eaf4ef;
+  --red:      #d64545;
+  --red-bg:   #fdf0f0;
+  --text:     #1a1a18;
+  --text2:    #6b6b66;
+  --text3:    #9b9b96;
+  --accent:   #3d8b6e;
+  --mono:     'SF Mono', 'Fira Code', 'Fira Mono', monospace;
+  --sans:     'Inter', system-ui, sans-serif;
+  --sidebar:  185px;
+  --chat:     290px;
 }
-
-html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); }
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 13px; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-/* ── SHELL ── */
+/* ── LAYOUT ── */
 .shell { display: flex; height: 100vh; overflow: hidden; }
 
 /* ── SIDEBAR ── */
 .sidebar {
-  width: var(--sidebar-w);
-  min-width: var(--sidebar-w);
+  width: var(--sidebar);
+  min-width: var(--sidebar);
   background: var(--surface);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  overflow-x: hidden;
+  user-select: none;
 }
-.sidebar-logo {
-  padding: 20px 16px 16px;
+.logo {
+  padding: 16px 16px 12px;
   border-bottom: 1px solid var(--border);
 }
-.sidebar-logo .name {
-  font-size: 14px;
+.logo-name {
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--text);
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.sidebar-logo .tagline {
-  font-size: 10px;
+.logo-beta {
+  font-size: 9px;
+  font-weight: 600;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text3);
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.logo-sub {
+  font-size: 11px;
   color: var(--text3);
   margin-top: 2px;
   font-family: var(--mono);
 }
-.sidebar-section {
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-}
-.sidebar-label {
+.nav-section { padding: 10px 0 6px; }
+.nav-section-label {
   font-size: 9px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.12em;
-  color: var(--text3);
-  padding: 6px 16px 4px;
   text-transform: uppercase;
-}
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 16px;
-  font-size: 13px;
-  color: var(--text2);
-  cursor: pointer;
-  border-radius: 0;
-  transition: color 0.15s, background 0.15s;
-  position: relative;
-  white-space: nowrap;
-}
-.nav-item:hover { color: var(--text); background: var(--surface2); }
-.nav-item.active { color: var(--accent); background: var(--accent-dim); }
-.nav-item.active::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 2px;
-  background: var(--accent);
-  border-radius: 0 2px 2px 0;
-}
-.nav-icon { font-size: 14px; width: 16px; text-align: center; font-family: var(--mono); }
-.nav-badge {
-  margin-left: auto;
-  font-size: 9px;
-  font-family: var(--mono);
-  background: var(--surface3);
-  color: var(--text3);
-  padding: 1px 5px;
-  border-radius: 4px;
-}
-
-.sidebar-portfolio {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-}
-.portfolio-select {
-  width: 100%;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-size: 12px;
-  font-family: var(--sans);
-  padding: 6px 8px;
-  border-radius: var(--radius);
-  cursor: pointer;
-  appearance: none;
-}
-.portfolio-select:focus { outline: 1px solid var(--accent); }
-
-.sidebar-bottom {
-  margin-top: auto;
-  padding: 12px 16px;
-  border-top: 1px solid var(--border);
-}
-.sidebar-user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 12px;
-  color: var(--text2);
-}
-.user-avatar {
-  width: 28px; height: 28px;
-  background: var(--accent-dim);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px;
   color: var(--accent);
-  font-weight: 600;
-}
-
-/* ── MAIN ── */
-.main {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ── TOPBAR ── */
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  padding: 0 28px;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.topbar-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-}
-.topbar-sub {
-  font-size: 12px;
-  color: var(--text3);
-  font-family: var(--mono);
-}
-.topbar-right {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.topbar-btn {
-  padding: 5px 12px;
-  font-size: 12px;
-  font-family: var(--sans);
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  color: var(--text2);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.topbar-btn:hover { color: var(--text); border-color: var(--border2); }
-.topbar-btn.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #0a1a0f;
-  font-weight: 600;
-}
-.topbar-btn.primary:hover { opacity: 0.9; }
-
-/* ── CONTENT ── */
-.content { padding: 24px 28px; flex: 1; }
-.page { display: none; }
-.page.active { display: block; }
-
-/* ── KPI ROW ── */
-.kpi-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-}
-.kpi-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px 18px;
-  position: relative;
-  overflow: hidden;
-}
-.kpi-card::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: var(--border);
-}
-.kpi-card.green::after  { background: var(--accent); }
-.kpi-card.red::after    { background: var(--red); }
-.kpi-card.yellow::after { background: var(--yellow); }
-.kpi-card.blue::after   { background: var(--blue); }
-
-.kpi-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text3);
-  margin-bottom: 8px;
+  padding: 4px 16px 6px;
   display: flex;
   align-items: center;
   gap: 6px;
 }
-.kpi-value {
-  font-family: var(--mono);
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--text);
-  line-height: 1;
-}
-.kpi-sub {
-  font-size: 11px;
-  color: var(--text3);
-  font-family: var(--mono);
-  margin-top: 6px;
-}
-.kpi-delta {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 11px;
-  font-family: var(--mono);
-  margin-top: 5px;
-}
-.kpi-delta.up   { color: var(--accent); }
-.kpi-delta.down { color: var(--red); }
-
-/* ── GRID ── */
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-.grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px; }
-
-/* ── PANEL ── */
-.panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-.panel-header {
+.nav-section-label::before { content: '●'; font-size: 7px; }
+.nav-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-}
-.panel-title {
-  font-size: 12px;
-  font-weight: 600;
+  gap: 9px;
+  padding: 6px 16px;
+  font-size: 13px;
   color: var(--text2);
-  letter-spacing: 0.05em;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.1s, color 0.1s;
+  white-space: nowrap;
+}
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.active { background: var(--surface2); color: var(--text); font-weight: 500; }
+.nav-icon { width: 16px; display: flex; align-items: center; justify-content: center; opacity: 0.6; }
+.nav-item.active .nav-icon { opacity: 1; }
+.nav-badge { margin-left: auto; width: 7px; height: 7px; background: var(--green); border-radius: 50%; }
+
+.sidebar-bottom {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding: 12px 16px;
+}
+.sb-user { font-size: 13px; font-weight: 500; color: var(--text); }
+.sb-signout { font-size: 11px; color: var(--text3); cursor: pointer; }
+.sb-signout:hover { color: var(--text2); }
+.sb-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text3);
+}
+.toggle-btn {
+  width: 28px; height: 16px;
+  background: var(--border);
+  border-radius: 8px;
+  position: relative;
+  cursor: pointer;
+}
+.toggle-btn::after { content:''; position:absolute; left:2px; top:2px; width:12px; height:12px; background:#fff; border-radius:50%; box-shadow:0 1px 2px rgba(0,0,0,.15); }
+.sb-powered { font-size: 10px; color: var(--text3); margin-top: 10px; }
+.sb-powered a { color: var(--accent); text-decoration: none; }
+
+/* ── MAIN ── */
+.main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.topbar-page { font-size: 13px; font-weight: 500; color: var(--text); }
+.topbar-views {
+  display: flex;
+  gap: 2px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px;
+}
+.view-btn {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text2);
+  padding: 3px 9px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition: all 0.1s;
+}
+.view-btn:hover { color: var(--text); }
+.view-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.view-btn.locked { color: var(--text3); }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.broker-select {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+/* ── CONTENT AREA ── */
+.body-area { flex: 1; display: flex; overflow: hidden; }
+.content { flex: 1; overflow-y: auto; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── STATS BAR ── */
+.stats-bar {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1.2fr 1.2fr 1.2fr;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.stat-cell {
+  padding: 14px 18px;
+  border-right: 1px solid var(--border);
+}
+.stat-cell:last-child { border-right: none; }
+.stat-main { font-size: 22px; font-weight: 700; letter-spacing: -0.03em; color: var(--text); line-height: 1; }
+.stat-main.red { color: var(--red); }
+.stat-main.green { color: var(--green); }
+.stat-sub { font-size: 11px; color: var(--text3); margin-top: 5px; }
+.stat-pct { font-size: 14px; font-weight: 600; display: block; }
+
+/* ── QUICK FACTS TICKER ── */
+.quick-facts {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 18px;
+  height: 34px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+  font-size: 11px;
+  color: var(--text3);
+}
+.qf-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  color: var(--text3);
+  margin-right: 14px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.panel-title .icon { font-family: var(--mono); color: var(--text3); }
-.panel-actions { display: flex; gap: 6px; }
-.panel-btn {
-  font-size: 11px;
-  font-family: var(--mono);
-  color: var(--text3);
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 3px 8px;
+.qf-label::after { content: '│'; font-size: 14px; color: var(--border2); }
+.qf-items { display: flex; gap: 32px; overflow: hidden; }
+.qf-item { white-space: nowrap; }
+.qf-item .hi { color: var(--green); font-weight: 500; }
+.qf-item .lo { color: var(--red); font-weight: 500; }
+
+/* ── P&L SPECTRUM ── */
+.spectrum-wrap { padding: 14px 18px; background: var(--surface); border-bottom: 1px solid var(--border); }
+.spectrum-label { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; }
+.spectrum-bar { display: flex; gap: 2px; height: 32px; }
+.spec-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 3px;
+  overflow: hidden;
+  white-space: nowrap;
+  color: #fff;
   cursor: pointer;
+  transition: filter 0.15s;
+  min-width: 24px;
 }
-.panel-btn:hover { color: var(--text); border-color: var(--border2); }
-.panel-btn.active { color: var(--accent); border-color: var(--accent-dim); background: var(--accent-dim); }
+.spec-seg:hover { filter: brightness(1.1); }
+.spec-seg.pos { background: var(--green); }
+.spec-seg.neg { background: var(--red); }
+.spec-wl { font-size: 11px; font-weight: 600; margin-top: 7px; color: var(--text3); }
+.spec-wl .w { color: var(--green); }
+.spec-wl .l { color: var(--red); }
+
+/* ── PROGRESS BAR ── */
+.progress-wrap { height: 4px; background: var(--surface2); overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--green) 80%, var(--red) 80%); }
 
 /* ── TABLE ── */
-.tbl-wrap { overflow-x: auto; }
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12.5px;
+.holdings-layout { display: flex; }
+.holdings-table-wrap { flex: 1; overflow: hidden; }
+.sidebar-right {
+  width: 240px;
+  min-width: 240px;
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
 }
+table { width: 100%; border-collapse: collapse; }
 th {
-  padding: 10px 16px;
+  padding: 9px 14px;
   text-align: left;
   font-size: 10px;
   font-weight: 600;
   color: var(--text3);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   border-bottom: 1px solid var(--border);
+  background: var(--surface);
   white-space: nowrap;
-  background: var(--surface2);
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 th.r, td.r { text-align: right; }
+th.sortable { cursor: pointer; }
+th.sortable:hover { color: var(--text2); }
 td {
-  padding: 10px 16px;
+  padding: 0;
   border-bottom: 1px solid var(--border);
-  color: var(--text2);
-  font-family: var(--mono);
-  font-size: 12px;
-  white-space: nowrap;
+  vertical-align: middle;
 }
-tr:last-child td { border-bottom: none; }
-tr:hover td { background: var(--surface2); color: var(--text); }
-td.name { font-family: var(--sans); font-size: 13px; color: var(--text); font-weight: 500; }
-td.ticker { color: var(--text3); font-size: 11px; }
-td.up   { color: var(--accent); }
-td.down { color: var(--red); }
-td.neutral { color: var(--text3); }
+.td-inner { padding: 9px 14px; }
+tr:hover td { background: var(--surface2); }
+.asset-ticker { font-size: 12px; font-weight: 600; color: var(--text); }
+.asset-name { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.asset-type { font-size: 9px; color: var(--text3); letter-spacing: 0.06em; }
+.two-line { display: flex; flex-direction: column; gap: 1px; }
+.two-line .top { font-size: 12px; color: var(--text); font-family: var(--mono); }
+.two-line .bot { font-size: 10px; color: var(--text3); font-family: var(--mono); }
+.two-line .bot.red { color: var(--red); }
+.two-line .bot.green { color: var(--green); }
+.green { color: var(--green); }
+.red { color: var(--red); }
+.expand-btn { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 10px; margin-right: 4px; }
 
-/* ── MINI CHART ── */
-.sparkline { height: 32px; }
-
-/* ── ALLOCATION ── */
-.alloc-list { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
-.alloc-row { display: flex; align-items: center; gap: 10px; }
-.alloc-label { font-size: 12px; color: var(--text2); width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.alloc-bar-bg { flex: 1; height: 4px; background: var(--surface3); border-radius: 2px; }
-.alloc-bar { height: 4px; border-radius: 2px; }
-.alloc-pct { font-size: 11px; font-family: var(--mono); color: var(--text3); width: 36px; text-align: right; }
-
-/* ── MINI STATS ── */
-.mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
-.mini-stat {
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-  border-right: 1px solid var(--border);
+/* ── RIGHT SIDEBAR (composition) ── */
+.rs-section { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.rs-title { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+.rs-subtitle { font-size: 10px; color: var(--text3); margin-top: -6px; margin-bottom: 10px; }
+.treemap { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2px; }
+.treemap-big { grid-column: 1; grid-row: 1 / 3; }
+.tm-cell {
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 5px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  overflow: hidden;
+  cursor: default;
 }
-.mini-stat:nth-child(even) { border-right: none; }
-.mini-stat:nth-last-child(-n+2) { border-bottom: none; }
-.mini-stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; }
-.mini-stat-value { font-size: 16px; font-family: var(--mono); font-weight: 600; color: var(--text); }
-.mini-stat-value.up { color: var(--accent); }
-.mini-stat-value.down { color: var(--red); }
-.mini-stat-value.muted { color: var(--text2); font-size: 13px; }
+.tm-cell .tm-pct { font-size: 9px; font-weight: 400; opacity: 0.8; margin-top: 1px; }
 
-/* ── CHART AREA ── */
-.chart-area { padding: 16px 18px; }
-.chart-placeholder {
-  width: 100%;
-  border-radius: 4px;
+.alloc-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.alloc-row:last-child { margin-bottom: 0; }
+.alloc-name { font-size: 11px; color: var(--text2); width: 45px; flex-shrink: 0; }
+.alloc-track { flex: 1; height: 3px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.alloc-fill { height: 100%; background: var(--green); border-radius: 2px; }
+.alloc-pct { font-size: 10px; font-family: var(--mono); color: var(--text3); width: 38px; text-align: right; }
+
+.age-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 11px; }
+.age-row:last-child { margin-bottom: 0; }
+.age-label { width: 45px; color: var(--text2); flex-shrink: 0; }
+.age-track { flex: 1; height: 3px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.age-fill { height: 100%; background: var(--green); border-radius: 2px; }
+.age-pct { font-size: 10px; font-family: var(--mono); color: var(--text3); }
+.age-buys { font-size: 10px; color: var(--text3); margin-left: 4px; }
+
+/* ── CHAT PANEL ── */
+.chat-panel {
+  width: var(--chat);
+  min-width: var(--chat);
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
-
-/* ── DIVIDEND ROW ── */
-.div-row {
+.chat-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+.chat-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chat-title::before { content: '●'; color: var(--green); font-size: 8px; }
+.chat-icons { display: flex; gap: 8px; color: var(--text3); font-size: 14px; cursor: pointer; }
+.chat-messages { flex: 1; overflow-y: auto; padding: 10px 0; }
+.chat-msg { padding: 8px 14px; border-bottom: 1px solid var(--border); }
+.chat-msg:last-child { border-bottom: none; }
+.chat-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.chat-avatar {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.chat-user { font-size: 11px; font-weight: 600; color: var(--text); }
+.chat-time { font-size: 10px; color: var(--text3); }
+.chat-text { font-size: 12px; color: var(--text2); line-height: 1.5; }
+.chat-reactions { display: flex; gap: 6px; margin-top: 5px; }
+.chat-reaction { font-size: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 2px 6px; color: var(--text3); cursor: pointer; }
+.chat-input-row {
+  padding: 10px 10px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chat-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: var(--sans);
+  color: var(--text);
+  outline: none;
+}
+.chat-input:focus { border-color: var(--border2); }
+.chat-input-icons { display: flex; gap: 6px; color: var(--text3); font-size: 14px; cursor: pointer; }
+
+/* ── PERFORMANCE PAGE ── */
+.perf-metrics {
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.perf-metric { font-size: 13px; }
+.perf-metric .label { color: var(--text3); margin-right: 6px; }
+.perf-metric .val { font-weight: 600; color: var(--green); }
+.chart-tabs {
+  display: flex;
+  gap: 2px;
   padding: 10px 18px;
   border-bottom: 1px solid var(--border);
-  font-size: 12px;
+  background: var(--surface);
+  align-items: center;
 }
-.div-row:last-child { border-bottom: none; }
-.div-name { color: var(--text); font-weight: 500; }
-.div-date { color: var(--text3); font-family: var(--mono); }
-.div-amt  { font-family: var(--mono); color: var(--accent); }
-
-/* ── TERMINAL ── */
-.terminal-line {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--text2);
-  padding: 3px 0;
-  display: flex;
-  gap: 12px;
-}
-.terminal-line .key { color: var(--text3); min-width: 160px; }
-.terminal-line .val { color: var(--text); }
-.terminal-line .val.up { color: var(--accent); }
-.terminal-line .val.down { color: var(--red); }
-.terminal-line .val.yellow { color: var(--yellow); }
-
-/* ── EMPTY ── */
-.empty {
-  padding: 40px;
-  text-align: center;
-  color: var(--text3);
-  font-size: 13px;
-  font-family: var(--mono);
-}
-
-/* ── TABS ── */
-.tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 1px solid var(--border);
-  padding: 0 18px;
-}
-.tab {
+.chart-tab {
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--text3);
-  padding: 10px 12px 9px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 5px;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  transition: all 0.15s;
-}
-.tab:hover { color: var(--text2); }
-.tab.active { color: var(--text); border-bottom-color: var(--accent); }
-
-/* ── SECTION LABEL ── */
-.section-eyebrow {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--text3);
-  margin-bottom: 10px;
+  border: none;
+  background: none;
+  transition: all 0.1s;
+}
+.chart-tab:hover { color: var(--text2); background: var(--surface2); }
+.chart-tab.active { color: var(--text); background: var(--surface2); }
+.period-tabs {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+.period-tab {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text3);
+  border: none;
+  background: none;
+}
+.period-tab:hover { color: var(--text2); }
+.period-tab.active { color: var(--text); font-weight: 600; }
+.chart-container { padding: 14px 18px; background: var(--surface); border-bottom: 1px solid var(--border); }
+.chart-legend { font-size: 10px; color: var(--text3); display: flex; gap: 14px; margin-bottom: 10px; }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 8px; height: 2px; border-radius: 1px; }
+.perf-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border-top: 1px solid var(--border);
+  margin: 20px 18px 0;
+}
+.perf-card {
+  background: var(--surface);
+  padding: 20px;
+}
+.perf-card-label { font-size: 11px; color: var(--text2); margin-bottom: 6px; }
+.perf-card-value { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; color: var(--green); }
+.perf-card-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+.diff-badge { font-size: 11px; font-weight: 600; background: var(--red-bg); color: var(--red); border: 1px solid #f5c6c6; border-radius: 4px; padding: 2px 7px; display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; }
+
+/* ── DIVIDENDS PAGE ── */
+.div-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+}
+.div-total { font-size: 24px; font-weight: 700; letter-spacing: -0.03em; color: var(--text); }
+.div-stat { font-size: 12px; color: var(--text3); }
+.div-stat .v { color: var(--text2); font-weight: 500; margin-right: 2px; }
+.div-pills {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 20px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.div-pill {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text2);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 9px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.div-pill .dot { width: 6px; height: 6px; border-radius: 50%; }
+.div-tabs { display: flex; gap: 0; padding: 0 20px; background: var(--surface); border-bottom: 1px solid var(--border); }
+.div-tab { font-size: 12px; font-weight: 500; color: var(--text3); padding: 10px 12px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.div-tab.active { color: var(--text); border-bottom-color: var(--text); }
+.upcoming-label { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); padding: 12px 20px 8px; }
+.upcoming-count { margin-left: auto; font-size: 11px; color: var(--text3); }
+.upcoming-row { display: flex; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--border); gap: 10px; }
+.upc-ticker { font-size: 12px; font-weight: 600; color: var(--text); width: 50px; }
+.upc-date { font-size: 11px; color: var(--text3); flex: 1; display: flex; align-items: center; gap: 6px; }
+.upc-date .days { font-size: 10px; color: var(--text3); }
+.upc-formula { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+.upc-total { font-size: 12px; font-weight: 600; color: var(--text); font-family: var(--mono); text-align: right; width: 60px; }
+
+/* ── TAXES PAGE ── */
+.taxes-years {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.year-btn { font-size: 12px; font-weight: 500; color: var(--text2); padding: 4px 8px; border-radius: 5px; cursor: pointer; border: none; background: none; }
+.year-btn:hover { background: var(--surface2); }
+.year-btn.active { background: var(--green); color: #fff; font-weight: 600; }
+.year-export { margin-left: auto; display: flex; gap: 6px; }
+.export-btn { font-size: 11px; font-weight: 500; color: var(--text2); border: 1px solid var(--border); background: var(--surface); border-radius: 5px; padding: 4px 10px; cursor: pointer; }
+.export-btn:hover { background: var(--surface2); }
+.net-position {
+  margin: 14px 18px 0;
+  background: var(--green-bg);
+  border: 1px solid #b8dece;
+  border-radius: 6px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+.tax-stats-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin: 14px 0 0;
+}
+.tax-stat { background: var(--surface); padding: 12px 18px; }
+.tax-stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.tax-stat-value { font-size: 16px; font-weight: 700; color: var(--text); font-family: var(--mono); }
+.section-header { font-size: 11px; font-weight: 600; color: var(--text2); padding: 14px 18px 8px; letter-spacing: 0.02em; }
+
+/* ── TERMINAL PAGE ── */
+.terminal-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 18px;
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 11px;
+  color: var(--text3);
 }
-.section-eyebrow::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-/* ── SVG CHART HELPER ── */
-svg text { font-family: var(--mono); }
-
-/* ── RESPONSIVE ── */
-@media (max-width: 900px) {
-  .sidebar { width: 56px; min-width: 56px; }
-  .sidebar-logo .name, .sidebar-logo .tagline,
-  .sidebar-label, .nav-item span.nav-text, .sidebar-user span,
-  .sidebar-portfolio, .sidebar-bottom .user-meta { display: none; }
-  .nav-item { padding: 10px; justify-content: center; }
-  .content { padding: 16px; }
-  .kpi-row { grid-template-columns: 1fr 1fr; }
-  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+.terminal-caret { color: var(--text2); font-family: var(--mono); }
+.ticker-search {
+  flex: 1;
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-family: var(--mono);
+  color: var(--text);
+  outline: none;
+  padding: 4px 0;
 }
+.ticker-scroll {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ticker-scroll::-webkit-scrollbar { display: none; }
+.pinned-label { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; }
+.ticker-chip {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin: 0 18px 0 0;
+  cursor: pointer;
+  background: var(--surface2);
+  white-space: nowrap;
+  border: 1px solid var(--border);
+}
+.ticker-chip:hover { background: var(--border); }
+
+/* ── TRANSITIONS ── */
+.page { animation: fadein 0.12s ease; }
+@keyframes fadein { from { opacity: 0.6; } to { opacity: 1; } }
 </style>
 </head>
 <body>
 <div class="shell">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <div class="name">Pay &amp; Pray</div>
-      <div class="tagline">// hope for the best</div>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-name">Pay &amp; Pray <span class="logo-beta">BETA</span></div>
+    <div class="logo-sub">terminal &amp; tracker</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Terminal</div>
+    <div class="nav-item" onclick="nav('terminal',this)">
+      <span class="nav-icon"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg></span>
+      Overview
     </div>
-
-    <div class="sidebar-portfolio" style="padding:12px 16px;">
-      <select class="portfolio-select" onchange="switchPortfolio(this.value)">
-        <option>Main Portfolio</option>
-        <option>Trading 212 ISA</option>
-        <option>Crypto (regret)</option>
-      </select>
+    <div class="nav-item" onclick="nav('terminal',this)">
+      <span class="nav-icon"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><polyline points="1,10 4,5 7,7 10,3 13,4" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span>
+      Markets
     </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-label">Overview</div>
-      <div class="nav-item active" onclick="nav('dashboard', this)">
-        <span class="nav-icon">$</span>
-        <span class="nav-text">Dashboard</span>
-      </div>
-      <div class="nav-item" onclick="nav('performance', this)">
-        <span class="nav-icon">#</span>
-        <span class="nav-text">Performance</span>
-      </div>
-      <div class="nav-item" onclick="nav('dividends', this)">
-        <span class="nav-icon">%</span>
-        <span class="nav-text">Dividends</span>
-        <span class="nav-badge">3</span>
-      </div>
+    <div class="nav-item" onclick="nav('terminal',this)">
+      <span class="nav-icon"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><polygon points="7,1 2,13 12,13" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span>
+      Screener
     </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-label">Analysis</div>
-      <div class="nav-item" onclick="nav('taxes', this)">
-        <span class="nav-icon">&gt;</span>
-        <span class="nav-text">FIFO Taxes</span>
-      </div>
-      <div class="nav-item" onclick="nav('terminal', this)">
-        <span class="nav-icon">~</span>
-        <span class="nav-text">Terminal</span>
-      </div>
-      <div class="nav-item" onclick="nav('cash', this)">
-        <span class="nav-icon">*</span>
-        <span class="nav-text">Cash &amp; Brokers</span>
-      </div>
+    <div class="nav-item" onclick="nav('terminal',this)">
+      <span class="nav-icon"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><line x1="1" y1="5" x2="13" y2="5" stroke="currentColor" stroke-width="1.3"/><line x1="4" y1="1" x2="4" y2="3" stroke="currentColor" stroke-width="1.3"/><line x1="10" y1="1" x2="10" y2="3" stroke="currentColor" stroke-width="1.3"/></svg></span>
+      Calendar
     </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-label">Data</div>
-      <div class="nav-item" onclick="nav('import', this)">
-        <span class="nav-icon">↑</span>
-        <span class="nav-text">Import CSV</span>
-      </div>
-      <div class="nav-item" onclick="nav('settings', this)">
-        <span class="nav-icon">⚙</span>
-        <span class="nav-text">Settings</span>
-      </div>
+    <div class="nav-item" onclick="nav('terminal',this)">
+      <span class="nav-icon"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><line x1="2" y1="12" x2="2" y2="8" stroke="currentColor" stroke-width="1.5"/><line x1="5" y1="12" x2="5" y2="5" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="12" x2="8" y2="7" stroke="currentColor" stroke-width="1.5"/><line x1="11" y1="12" x2="11" y2="3" stroke="currentColor" stroke-width="1.5"/></svg></span>
+      Charts
     </div>
+  </div>
 
-    <div class="sidebar-bottom">
-      <div class="sidebar-user">
-        <div class="user-avatar">R</div>
-        <span class="user-meta" style="font-size:12px;color:var(--text2);">radovan</span>
-      </div>
+  <div class="nav-section">
+    <div class="nav-section-label">Portfolio</div>
+    <div class="nav-item" onclick="nav('watchlist',this)">
+      <span class="nav-icon"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.3"/><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg></span>
+      Watchlist
     </div>
-  </aside>
-
-  <!-- MAIN -->
-  <main class="main">
-
-    <!-- TOPBAR -->
-    <div class="topbar">
-      <div class="topbar-title" id="topbar-title">Dashboard</div>
-      <div class="topbar-sub" id="topbar-sub">Main Portfolio · EUR · as of today</div>
-      <div class="topbar-right">
-        <select style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:11px;font-family:var(--mono);padding:4px 8px;border-radius:var(--radius);cursor:pointer;appearance:none;">
-          <option>EUR</option><option>USD</option><option>CZK</option><option>GBP</option>
-        </select>
-        <button class="topbar-btn" onclick="nav('import', document.querySelector('.nav-item:nth-child(7))'))">↑ Import CSV</button>
-        <button class="topbar-btn primary">+ Add Trade</button>
-      </div>
+    <div class="nav-item active" onclick="nav('dashboard',this)">
+      <span class="nav-icon"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="7" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="1" width="5" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="7" width="5" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="10" width="5" height="3" rx="1" stroke="currentColor" stroke-width="1.3"/></svg></span>
+      Dashboard
     </div>
+    <div class="nav-item" onclick="nav('performance',this)">
+      <span class="nav-icon"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><polyline points="1,9 4,5 7,6.5 10,3 13,4" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span>
+      Performance
+    </div>
+    <div class="nav-item" onclick="nav('snapshot',this)">
+      <span class="nav-icon"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><circle cx="7" cy="7.5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 3 L5.5 1.5 H8.5 L9 3" stroke="currentColor" stroke-width="1.3"/></svg></span>
+      Snapshot
+    </div>
+    <div class="nav-item" onclick="nav('transactions',this)">
+      <span class="nav-icon"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 4 H12 M10 2 L12 4 L10 6" stroke="currentColor" stroke-width="1.3"/><path d="M12 10 H2 M4 8 L2 10 L4 12" stroke="currentColor" stroke-width="1.3"/></svg></span>
+      Transactions
+    </div>
+    <div class="nav-item" onclick="nav('dividends',this)">
+      <span class="nav-icon"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="5" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/><circle cx="9" cy="9" r="3" stroke="currentColor" stroke-width="1.3"/><line x1="2" y1="12" x2="12" y2="2" stroke="currentColor" stroke-width="1.3"/></svg></span>
+      Dividends
+    </div>
+    <div class="nav-item" onclick="nav('taxes',this)">
+      <span class="nav-icon"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="2" y="1" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><line x1="4.5" y1="5" x2="9.5" y2="5" stroke="currentColor" stroke-width="1.3"/><line x1="4.5" y1="7.5" x2="9.5" y2="7.5" stroke="currentColor" stroke-width="1.3"/><line x1="4.5" y1="10" x2="7" y2="10" stroke="currentColor" stroke-width="1.3"/></svg></span>
+      Taxes
+    </div>
+  </div>
 
-    <!-- CONTENT -->
+  <div class="nav-section" style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px;">
+    <div class="nav-item" onclick="nav('settings',this)">
+      <span class="nav-icon"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 1v1.5M7 11.5V13M1 7h1.5M11.5 7H13M2.6 2.6l1.1 1.1M10.3 10.3l1.1 1.1M2.6 11.4l1.1-1.1M10.3 3.7l1.1-1.1" stroke="currentColor" stroke-width="1.3"/></svg></span>
+      Settings
+    </div>
+    <div class="nav-item" onclick="nav('whats-new',this)">
+      <span class="nav-icon"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><polygon points="7,1 8.3,5 12.5,5 9.1,7.7 10.4,12 7,9.3 3.6,12 4.9,7.7 1.5,5 5.7,5" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span>
+      What's new
+      <span class="nav-badge"></span>
+    </div>
+    <div class="nav-item" onclick="">
+      <span class="nav-icon"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 11 Q2 2 12 2" stroke="currentColor" stroke-width="1.3" fill="none"/><rect x="9" y="8" width="3" height="5" rx="0.5" stroke="currentColor" stroke-width="1.3"/></svg></span>
+      Feedback
+    </div>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="sb-user">Radovan</div>
+    <div class="sb-signout">Sign out</div>
+    <div class="sb-toggle">
+      <div class="toggle-btn"></div>
+      Light
+    </div>
+    <div class="sb-powered">Powered by <a href="#">FMP</a> + <a href="#">Twelve Data</a></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-page" id="topbar-page">Dashboard</span>
+    <div class="topbar-views" id="topbar-views">
+      <button class="view-btn active" onclick="setView('single',this)">Single</button>
+      <button class="view-btn locked" title="Premium">All 🔒</button>
+    </div>
+    <div class="topbar-right">
+      <div class="broker-select">Revolut [T] ▾</div>
+      <div class="broker-select" style="border-left:none;border-radius:0 6px 6px 0;margin-left:-9px;">IBKR [B]</div>
+      <div style="color:var(--text3);cursor:pointer;font-size:18px;padding:0 4px;">⋮</div>
+    </div>
+  </div>
+
+  <div class="body-area">
     <div class="content">
 
       <!-- ── DASHBOARD ── -->
       <div class="page active" id="page-dashboard">
-        <div class="kpi-row">
-          <div class="kpi-card green">
-            <div class="kpi-label"><span>Portfolio Value</span></div>
-            <div class="kpi-value">€24,318.42</div>
-            <div class="kpi-delta up">▲ 3.24% today</div>
-            <div class="kpi-sub">+€763.20 today</div>
+        <!-- Stats bar -->
+        <div class="stats-bar">
+          <div class="stat-cell">
+            <div class="stat-main">$2,865.76</div>
+            <div class="stat-sub">Total Value · 13 pos · 1 curr</div>
           </div>
-          <div class="kpi-card red">
-            <div class="kpi-label"><span>Total Invested</span></div>
-            <div class="kpi-value">€21,450.00</div>
-            <div class="kpi-sub">across 14 positions</div>
+          <div class="stat-cell">
+            <div class="stat-main red">-$5.77</div>
+            <div class="stat-sub"><span class="stat-pct red">-0.20%</span>TODAY</div>
           </div>
-          <div class="kpi-card green">
-            <div class="kpi-label"><span>Unrealised P&amp;L</span></div>
-            <div class="kpi-value">+€2,868.42</div>
-            <div class="kpi-delta up">▲ +13.37% total</div>
+          <div class="stat-cell">
+            <div class="stat-main green">+$495.90</div>
+            <div class="stat-sub"><span class="stat-pct green">+20.93%</span>UNREALIZED</div>
           </div>
-          <div class="kpi-card yellow">
-            <div class="kpi-label"><span>Realised P&amp;L (YTD)</span></div>
-            <div class="kpi-value">+€1,102.88</div>
-            <div class="kpi-sub">taxable in SK §9 ZDP</div>
+          <div class="stat-cell">
+            <div class="stat-main">$2,369.86</div>
+            <div class="stat-sub">COST BASIS</div>
           </div>
-        </div>
-
-        <div class="grid-3">
-          <!-- Holdings table -->
-          <div class="panel">
-            <div class="panel-header">
-              <div class="panel-title"><span class="icon">$</span> Holdings</div>
-              <div class="panel-actions">
-                <button class="panel-btn active">Value</button>
-                <button class="panel-btn">P&amp;L</button>
-                <button class="panel-btn">Weight</button>
-              </div>
-            </div>
-            <div class="tbl-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Ticker</th>
-                    <th>Name</th>
-                    <th class="r">Qty</th>
-                    <th class="r">Avg Cost</th>
-                    <th class="r">Price</th>
-                    <th class="r">Value</th>
-                    <th class="r">P&amp;L %</th>
-                  </tr>
-                </thead>
-                <tbody id="holdings-tbody"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Allocation -->
-          <div class="panel">
-            <div class="panel-header">
-              <div class="panel-title"><span class="icon">#</span> Allocation</div>
-            </div>
-            <!-- donut -->
-            <div style="padding:16px 18px; display:flex; justify-content:center;">
-              <svg width="130" height="130" viewBox="0 0 130 130" id="donut-svg"></svg>
-            </div>
-            <div class="alloc-list" id="alloc-list"></div>
+          <div class="stat-cell">
+            <div class="stat-main">3y 7m</div>
+            <div class="stat-sub">AVG HOLD</div>
           </div>
         </div>
 
-        <div class="grid-2">
-          <!-- Performance mini chart -->
-          <div class="panel">
-            <div class="panel-header">
-              <div class="panel-title"><span class="icon">#</span> Portfolio vs S&amp;P 500</div>
-              <div class="panel-actions">
-                <button class="panel-btn active">1M</button>
-                <button class="panel-btn">3M</button>
-                <button class="panel-btn">YTD</button>
-                <button class="panel-btn">1Y</button>
-              </div>
-            </div>
-            <div class="chart-area">
-              <svg width="100%" height="160" id="perf-chart" style="overflow:visible;"></svg>
-            </div>
-            <div class="mini-stats">
-              <div class="mini-stat">
-                <div class="mini-stat-label">TWR</div>
-                <div class="mini-stat-value up">+11.4%</div>
-              </div>
-              <div class="mini-stat">
-                <div class="mini-stat-label">MWRR</div>
-                <div class="mini-stat-value up">+9.8%</div>
-              </div>
-              <div class="mini-stat">
-                <div class="mini-stat-label">S&amp;P 500</div>
-                <div class="mini-stat-value up">+8.2%</div>
-              </div>
-              <div class="mini-stat">
-                <div class="mini-stat-label">Alpha</div>
-                <div class="mini-stat-value up">+3.2%</div>
-              </div>
-            </div>
+        <!-- Quick facts -->
+        <div class="quick-facts">
+          <div class="qf-label">QUICK FACTS</div>
+          <div class="qf-items">
+            <div class="qf-item">BABA needs <span class="lo">+105%</span> — thoughts &amp; prayers</div>
+            <div class="qf-item">top 3 own <span class="hi">52%</span> — diversification is optional</div>
+            <div class="qf-item">BRK is <span class="hi">26x</span> bigger than NIO</div>
+            <div class="qf-item">MVP — <span class="hi">GOOGL at +115%</span></div>
           </div>
+        </div>
 
-          <!-- Dividends upcoming -->
-          <div class="panel">
-            <div class="panel-header">
-              <div class="panel-title"><span class="icon">%</span> Upcoming Dividends</div>
-              <button class="panel-btn" onclick="nav('dividends', null)">All →</button>
-            </div>
-            <div id="upcoming-divs"></div>
-            <div class="panel-header" style="border-top:1px solid var(--border); border-bottom:none; margin-top:0;">
-              <div class="panel-title" style="font-size:10px;">YTD received</div>
-              <div style="font-family:var(--mono);font-size:14px;color:var(--accent);">€218.44</div>
-            </div>
+        <!-- P&L Spectrum -->
+        <div class="spectrum-wrap">
+          <div class="spectrum-label">P&amp;L SPECTRUM</div>
+          <div class="spectrum-bar" id="spectrum-bar"></div>
+          <div class="spec-wl"><span class="w">8W</span> / <span class="l">5L</span></div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="progress-wrap">
+          <div class="progress-fill" style="width:100%;background:linear-gradient(90deg, var(--green) 62%, var(--red) 62%)"></div>
+        </div>
+
+        <!-- Holdings + Right sidebar -->
+        <div class="holdings-layout">
+          <div class="holdings-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:200px;">Asset</th>
+                  <th class="r">Qty</th>
+                  <th class="r">Price / Cost</th>
+                  <th class="r">Day $ / %</th>
+                  <th class="r">Value (USD)</th>
+                  <th class="r sortable">P&amp;L $ / % ▼</th>
+                  <th class="r">FX $ / %</th>
+                  <th class="r">Weight</th>
+                </tr>
+              </thead>
+              <tbody id="holdings-tbody"></tbody>
+            </table>
+          </div>
+          <div class="sidebar-right" id="sidebar-right">
+            <!-- Filled by JS -->
           </div>
         </div>
       </div>
 
       <!-- ── PERFORMANCE ── -->
       <div class="page" id="page-performance">
-        <div class="kpi-row">
-          <div class="kpi-card green">
-            <div class="kpi-label">TWR (YTD)</div>
-            <div class="kpi-value">+11.4%</div>
-            <div class="kpi-sub">time-weighted</div>
+        <div class="perf-metrics">
+          <div class="perf-metric"><span class="label">TWR</span><span class="val">+6.40%</span></div>
+          <div class="perf-metric"><span class="label">MWRR</span><span class="val">+5.98%</span></div>
+          <div class="perf-metric"><span class="label">S&amp;P</span><span class="val">+20.67%</span></div>
+        </div>
+        <div class="chart-tabs">
+          <button class="chart-tab active">TWR vs Benchmark</button>
+          <button class="chart-tab">Drawdown</button>
+          <button class="chart-tab">P&amp;L</button>
+          <button class="chart-tab">Cost vs Value</button>
+          <div class="period-tabs">
+            <button class="period-tab">1M</button>
+            <button class="period-tab">3M</button>
+            <button class="period-tab">6M</button>
+            <button class="period-tab">YTD</button>
+            <button class="period-tab active">1Y</button>
+            <button class="period-tab">3Y</button>
+            <button class="period-tab">5Y</button>
+            <button class="period-tab">ALL</button>
+            <button class="period-tab">Custom</button>
           </div>
-          <div class="kpi-card green">
-            <div class="kpi-label">MWRR (YTD)</div>
-            <div class="kpi-value">+9.8%</div>
-            <div class="kpi-sub">money-weighted</div>
-          </div>
-          <div class="kpi-card blue">
-            <div class="kpi-label">S&amp;P 500 (YTD)</div>
-            <div class="kpi-value">+8.2%</div>
-            <div class="kpi-sub">benchmark</div>
-          </div>
-          <div class="kpi-card yellow">
-            <div class="kpi-label">Volatility</div>
-            <div class="kpi-value">14.2%</div>
-            <div class="kpi-sub">annualised std dev</div>
+          <div style="margin-left:16px;font-size:10px;color:var(--text3);display:flex;gap:10px;">
+            <span style="color:var(--green);">— Portfolio</span>
+            <span style="color:var(--text3);">- - S&amp;P 500</span>
           </div>
         </div>
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">Portfolio vs S&amp;P 500 (YTD)</div>
-            <div class="panel-actions">
-              <button class="panel-btn">1M</button>
-              <button class="panel-btn">3M</button>
-              <button class="panel-btn active">YTD</button>
-              <button class="panel-btn">1Y</button>
-              <button class="panel-btn">All</button>
-            </div>
-          </div>
-          <div class="chart-area">
-            <svg width="100%" height="220" id="perf-chart2" style="overflow:visible;"></svg>
-          </div>
+        <div class="chart-container">
+          <svg width="100%" height="200" id="perf-svg" style="overflow:visible;"></svg>
         </div>
-        <div class="section-eyebrow" style="margin-top:20px;">Per-position performance</div>
-        <div class="panel">
-          <div class="tbl-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Ticker</th>
-                  <th>Name</th>
-                  <th class="r">Buy date</th>
-                  <th class="r">Cost basis</th>
-                  <th class="r">Current</th>
-                  <th class="r">P&amp;L €</th>
-                  <th class="r">P&amp;L %</th>
-                  <th class="r">Contribution</th>
-                </tr>
-              </thead>
-              <tbody id="perf-tbody"></tbody>
-            </table>
+        <div style="padding:14px 18px 0;background:var(--surface);">
+          <div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);">ATTRIBUTION · 1Y</div>
+        </div>
+        <div class="perf-summary">
+          <div class="perf-card">
+            <div class="perf-card-label">Time-Weighted Return (TWR) ?</div>
+            <div class="perf-card-value">+13.63% <span style="font-size:14px;">p.a.</span></div>
+            <div class="perf-card-sub">+201.99% total</div>
+            <div class="diff-badge">-0.9pp MWRR &lt; TWR</div>
+            <div class="perf-card-sub" style="margin-top:8px;">How well you picked stocks. Ignores deposits and withdrawals — measures pure investment skill.</div>
+          </div>
+          <div class="perf-card">
+            <div class="perf-card-label">Money-Weighted Return (MWRR) ?</div>
+            <div class="perf-card-value">+12.78% <span style="font-size:14px;">p.a.</span></div>
+            <div class="perf-card-sub">+182.90% total</div>
+            <div class="perf-card-sub" style="margin-top:8px;">Your actual personal return. Accounts for when you deposited or withdrew money. Annualized rate.</div>
           </div>
         </div>
       </div>
 
       <!-- ── DIVIDENDS ── -->
       <div class="page" id="page-dividends">
-        <div class="kpi-row">
-          <div class="kpi-card green">
-            <div class="kpi-label">YTD Received</div>
-            <div class="kpi-value">€218.44</div>
-          </div>
-          <div class="kpi-card yellow">
-            <div class="kpi-label">Upcoming (30d)</div>
-            <div class="kpi-value">€84.20</div>
-          </div>
-          <div class="kpi-card blue">
-            <div class="kpi-label">Yield on Cost</div>
-            <div class="kpi-value">2.14%</div>
-          </div>
-          <div class="kpi-card blue">
-            <div class="kpi-label">Projected Annual</div>
-            <div class="kpi-value">€520.00</div>
+        <div class="div-header">
+          <div class="div-total">$75.87 <span style="font-size:13px;font-weight:400;color:var(--text3);">TOTAL RECEIVED</span></div>
+          <div class="div-stat"><span class="v">TTM $18.50</span> <span class="green">+37.5%</span></div>
+          <div class="div-stat">YIELD <span class="v">0.65%</span></div>
+          <div class="div-stat">YOC <span class="v">1.02%</span></div>
+          <div class="div-stat">AVG/MO <span class="v">$1.17</span> 3y avg</div>
+          <div class="div-stat">PAYMENTS <span class="v">91</span> 3y</div>
+        </div>
+        <div class="div-pills">
+          <div class="div-pill"><div class="dot" style="background:#e8a838;"></div> Top: BABA 23.4%</div>
+          <div class="div-pill"><div class="dot" style="background:#4a9e6e;"></div> Yield: MDT 4.44%</div>
+          <div class="div-pill"><div class="dot" style="background:#5b9bd5;"></div> Growth: BABA +42.9%</div>
+          <div class="div-pill"><div class="dot" style="background:#d64545;"></div> Payout: MDT 75.8%</div>
+          <div class="div-pill"><div class="dot" style="background:#7b7b76;"></div> Next: META 4d</div>
+        </div>
+        <div class="div-tabs">
+          <div class="div-tab active">Scoreboard</div>
+          <div class="div-tab">Analytics</div>
+          <div class="div-tab">History</div>
+        </div>
+        <!-- Upcoming -->
+        <div class="upcoming-label">UPCOMING <span class="upcoming-count">2 pending · $1.45 est.</span></div>
+        <div class="upcoming-row">
+          <div class="upc-ticker">META</div>
+          <div class="upc-date"><span style="color:var(--text);">Jun 15</span> <span class="days">4d</span></div>
+          <div class="upc-formula">$8.53 × 0.70</div>
+          <div class="upc-total">$9.37</div>
+        </div>
+        <div class="upcoming-row">
+          <div class="upc-ticker">MDT</div>
+          <div class="upc-date"><span style="color:var(--text);">Jun 26</span> <span class="days">15d</span></div>
+          <div class="upc-formula">$0.72 × 1.50</div>
+          <div class="upc-total">$1.08</div>
+        </div>
+        <!-- Scoreboard -->
+        <div class="upcoming-label" style="margin-top:8px;">DIVIDEND SCOREBOARD <span class="upcoming-count">9 dividend-paying · 0 no income yet</span></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th class="r">Yield</th>
+              <th class="r">YoC</th>
+              <th class="r">Div/Share</th>
+              <th class="r">Income TTM ▼</th>
+              <th class="r">Payout</th>
+              <th class="r">5Y CAGR</th>
+              <th class="r">Streak</th>
+            </tr>
+          </thead>
+          <tbody id="div-tbody"></tbody>
+        </table>
+        <div style="padding:14px 18px 8px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);">RECENTLY RECEIVED</div>
+        <table>
+          <thead>
+            <tr><th>Ticker</th><th>Date</th><th class="r">Formula</th><th class="r">Total</th></tr>
+          </thead>
+          <tbody id="div-recent-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- ── TAXES ── -->
+      <div class="page" id="page-taxes">
+        <div class="taxes-years">
+          <button class="year-btn active">2026</button>
+          <button class="year-btn">2025</button>
+          <button class="year-btn">2024</button>
+          <button class="year-btn">2023</button>
+          <button class="year-btn">2022</button>
+          <button class="year-btn">2021</button>
+          <button class="year-btn">2020</button>
+          <button class="year-btn">2019</button>
+          <div class="year-export">
+            <button class="export-btn">CSV ↓</button>
+            <button class="export-btn">PDF ↓</button>
           </div>
         </div>
-        <div class="section-eyebrow">Upcoming</div>
-        <div class="panel" style="margin-bottom:16px;">
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr><th>Ticker</th><th>Ex-Date</th><th>Pay Date</th><th class="r">Shares</th><th class="r">Div/Share</th><th class="r">Est. Total</th></tr></thead>
-              <tbody id="div-upcoming-tbody"></tbody>
-            </table>
+        <div style="padding:0 18px;">
+          <div class="net-position">
+            <span>2026 NET POSITION</span>
+            <span>+$7.95</span>
           </div>
         </div>
-        <div class="section-eyebrow">Received history</div>
-        <div class="panel">
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr><th>Date</th><th>Ticker</th><th>Name</th><th class="r">Amount</th><th class="r">Tax withheld</th><th class="r">Net</th></tr></thead>
-              <tbody id="div-history-tbody"></tbody>
-            </table>
-          </div>
+        <div class="tax-stats-row">
+          <div class="tax-stat"><div class="tax-stat-label">Realized P&L</div><div class="tax-stat-value">$0.00</div></div>
+          <div class="tax-stat"><div class="tax-stat-label">Proceeds</div><div class="tax-stat-value">$0.00</div></div>
+          <div class="tax-stat"><div class="tax-stat-label">Cost Basis</div><div class="tax-stat-value">$0.00</div></div>
+          <div class="tax-stat"><div class="tax-stat-label">Fees</div><div class="tax-stat-value">$0.00</div></div>
+          <div class="tax-stat"><div class="tax-stat-label">Dividend Income</div><div class="tax-stat-value green">$7.95</div></div>
+        </div>
+        <div style="background:var(--surface);border-bottom:1px solid var(--border);">
+          <div class="section-header">Capital Gains / Losses (0)</div>
+          <div style="padding:30px;text-align:center;color:var(--text3);font-size:13px;border-top:1px solid var(--border);">Zero realized in 2026. Diamond hands or just denial?</div>
+        </div>
+        <div style="background:var(--surface);">
+          <div class="section-header" style="border-top:1px solid var(--border);margin-top:12px;">Dividend Income (9)</div>
+          <table>
+            <thead>
+              <tr><th>Ticker</th><th>Asset</th><th class="r">Gross Income</th><th class="r">Payments</th><th class="r">FX Rate</th></tr>
+            </thead>
+            <tbody id="tax-tbody"></tbody>
+          </table>
         </div>
       </div>
 
-      <!-- ── FIFO TAXES ── -->
-      <div class="page" id="page-taxes">
-        <div class="kpi-row">
-          <div class="kpi-card yellow">
-            <div class="kpi-label">Realised Gains (YTD)</div>
-            <div class="kpi-value">€1,102.88</div>
-            <div class="kpi-sub">lots closed this year</div>
-          </div>
-          <div class="kpi-card red">
-            <div class="kpi-label">Estimated Tax (SK)</div>
-            <div class="kpi-value">€77.20</div>
-            <div class="kpi-sub">7% flat, §9 ZDP</div>
-          </div>
-          <div class="kpi-card green">
-            <div class="kpi-label">Exempt (§9 ZDP)</div>
-            <div class="kpi-value">€0.00</div>
-            <div class="kpi-sub">held &gt; 1yr, threshold met</div>
-          </div>
-          <div class="kpi-card blue">
-            <div class="kpi-label">Lots Closed</div>
-            <div class="kpi-value">12</div>
-          </div>
-        </div>
-        <div class="panel" style="margin-bottom:16px;">
-          <div class="panel-header">
-            <div class="panel-title">&gt; FIFO Lot Matching</div>
-            <div class="panel-actions">
-              <button class="panel-btn" style="color:var(--accent);">↓ Export CSV</button>
-              <button class="panel-btn" style="color:var(--accent);">↓ Export PDF</button>
+      <!-- ── TRANSACTIONS ── -->
+      <div class="page" id="page-transactions">
+        <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:14px 18px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;">NEW TRANSACTION</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+            <div>
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Type *</div>
+              <select style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:5px;font-size:12px;">
+                <option>Buy</option><option>Sell</option><option>Dividend</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Ticker *</div>
+              <input type="text" value="AAPL" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:5px;font-size:12px;">
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Date *</div>
+              <input type="date" value="2026-06-11" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:5px;font-size:12px;">
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Currency</div>
+              <select style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:5px;font-size:12px;">
+                <option>USD</option><option>EUR</option><option>GBP</option>
+              </select>
             </div>
           </div>
-          <div class="tbl-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Ticker</th>
-                  <th>Buy Date</th>
-                  <th>Sell Date</th>
-                  <th class="r">Qty</th>
-                  <th class="r">Avg Cost</th>
-                  <th class="r">Sell Price</th>
-                  <th class="r">Gain/Loss</th>
-                  <th class="r">Held (days)</th>
-                  <th class="r">§9 Exempt</th>
-                </tr>
-              </thead>
-              <tbody id="tax-tbody"></tbody>
-            </table>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;align-items:end;">
+            <div>
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Quantity *</div>
+              <input type="text" value="10" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:5px;font-size:12px;">
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Unit Price *</div>
+              <input type="text" value="150.00" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:5px;font-size:12px;">
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Fees</div>
+              <input type="text" value="0" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:5px;font-size:12px;">
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Note</div>
+              <input type="text" placeholder="optional" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:5px;font-size:12px;">
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+            <button style="background:var(--green);color:#fff;border:none;border-radius:5px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;">Add Transaction</button>
+            <div style="display:flex;gap:8px;">
+              <button class="export-btn">Export</button>
+              <button class="export-btn">Import</button>
+              <button style="background:var(--red-bg);color:var(--red);border:1px solid #f5c6c6;border-radius:5px;padding:5px 12px;font-size:12px;cursor:pointer;">Delete All</button>
+            </div>
           </div>
         </div>
-        <div class="panel" style="background:var(--yellow-dim); border-color: #5a4510;">
-          <div style="padding:14px 18px; font-size:12px; color:var(--yellow); font-family:var(--mono);">
-            ⚠ This is not tax advice. Consult a real human who will charge you for it.
-            §9 ZDP exemption: securities held &gt;1 year, annual realised gains ≤ €500 exempt from tax.
-            Above €500, the full amount is taxable at 7% (base rate).
-          </div>
+        <div style="padding:8px 18px;display:flex;justify-content:flex-end;border-bottom:1px solid var(--border);">
+          <button class="export-btn" style="display:flex;align-items:center;gap:5px;">▼ Filters</button>
         </div>
+        <table>
+          <thead>
+            <tr><th>Date ▼</th><th>Type</th><th>Asset</th><th class="r">Qty</th><th class="r">Price</th><th class="r">Total</th><th class="r">Fees</th><th></th></tr>
+          </thead>
+          <tbody id="tx-tbody"></tbody>
+        </table>
       </div>
 
       <!-- ── TERMINAL ── -->
       <div class="page" id="page-terminal">
-        <div style="display:flex; gap:12px; margin-bottom:16px;">
-          <input id="terminal-input" type="text" placeholder="search ticker... AAPL, MSFT, VOO"
-            style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:10px 14px;border-radius:var(--radius);outline:none;"
-            onkeydown="if(event.key==='Enter') terminalSearch()"
-            onfocus="this.style.borderColor='var(--accent)'"
-            onblur="this.style.borderColor='var(--border)'"
-          >
-          <button class="topbar-btn primary" onclick="terminalSearch()">→ Look up</button>
+        <div class="terminal-header">
+          <span class="terminal-caret">›</span>
+          <span style="color:var(--text3);font-size:11px;">THE TERMINAL IS LISTENING.</span>
         </div>
-        <div id="terminal-result">
-          <div class="panel">
-            <div class="panel-header">
-              <div class="panel-title">~ AAPL — Apple Inc.</div>
-              <div style="font-family:var(--mono);font-size:18px;color:var(--text);">$189.30 <span style="color:var(--accent);font-size:13px;">▲ +1.24%</span></div>
+        <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;gap:8px;">
+          <span style="color:var(--text3);">🔍</span>
+          <input class="ticker-search" placeholder="AAPL · VWCE.DE · 0700.HK · BTCUSD ...">
+          <span style="font-size:11px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-family:var(--mono);">Ctrl K</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px 8px;font-size:10px;color:var(--text3);">
+          <span>PINNED · 6/50</span>
+          <div style="display:flex;gap:10px;"><span style="cursor:pointer;color:var(--green);">+ Add</span><span style="cursor:pointer;">manage</span></div>
+        </div>
+        <div style="padding:0 18px 14px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="ticker-chip">AAPL</span>
+          <span class="ticker-chip">MSFT</span>
+          <span class="ticker-chip">NVDA</span>
+          <span class="ticker-chip">SPY</span>
+          <span class="ticker-chip">VWCE.DE</span>
+          <span class="ticker-chip">0700.HK</span>
+        </div>
+        <div style="border-top:1px solid var(--border);">
+          <div style="display:flex;border-bottom:1px solid var(--border);">
+            <button class="chart-tab active" style="margin:8px 6px;">MARKET BRIEF</button>
+            <button class="chart-tab" style="margin:8px 2px;">JOURNAL</button>
+            <div style="margin-left:auto;padding:8px 18px;font-size:11px;color:var(--text3);cursor:pointer;">🔔</div>
+          </div>
+          <div style="padding:14px 18px;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:6px;">■ MARKET BRIEF  Jun 11, 2026 <span style="color:var(--text3);border:1px solid var(--border);border-radius:3px;padding:1px 6px;margin-left:4px;">premium</span> <span style="cursor:pointer;margin-left:4px;">⊞ ARCHIVE</span></div>
+            <div style="display:inline-block;background:var(--red-bg);color:var(--red);border:1px solid #f5c6c6;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;margin-bottom:10px;">RISK-OFF</div>
+            <div style="font-size:14px;font-weight:600;color:var(--text);line-height:1.5;margin-bottom:12px;">A hot inflation print and fresh US strikes on Iran flipped the switch from greed to fear — and the AI trade kept bleeding.</div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:20px;text-align:center;">
+              <div style="font-size:20px;margin-bottom:8px;">🔒</div>
+              <div style="font-size:13px;font-weight:600;margin-bottom:6px;">The full morning brief is Premium</div>
+              <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">What moved and why, how the latest earnings landed, and what to watch today. This one unlocks free for everyone in 7 days — or read it now with Premium.</div>
+              <button style="background:var(--green);color:#fff;border:none;border-radius:6px;padding:8px 20px;font-size:12px;font-weight:600;cursor:pointer;width:100%;">Upgrade to Premium</button>
             </div>
-            <div style="padding:16px 18px; display:grid; grid-template-columns:1fr 1fr; gap:0;" id="terminal-data"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── CASH & BROKERS ── -->
-      <div class="page" id="page-cash">
-        <div class="kpi-row">
-          <div class="kpi-card green">
-            <div class="kpi-label">Total Cash</div>
-            <div class="kpi-value">€3,210.00</div>
-            <div class="kpi-sub">across all accounts</div>
-          </div>
-          <div class="kpi-card blue">
-            <div class="kpi-label">Net Worth (excl. RE)</div>
-            <div class="kpi-value">€27,528.42</div>
-            <div class="kpi-sub">portfolio + cash</div>
-          </div>
-          <div class="kpi-card yellow">
-            <div class="kpi-label">Pending Deposits</div>
-            <div class="kpi-value">€500.00</div>
-          </div>
-          <div class="kpi-card red">
-            <div class="kpi-label">Fees (YTD)</div>
-            <div class="kpi-value">€14.20</div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">* Brokerage Accounts</div>
-            <button class="panel-btn">+ Add account</button>
-          </div>
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr><th>Broker</th><th>Account</th><th>Currency</th><th class="r">Cash Balance</th><th class="r">Portfolio Value</th><th class="r">Total</th></tr></thead>
-              <tbody id="cash-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── IMPORT ── -->
-      <div class="page" id="page-import">
-        <div class="panel" style="max-width:600px;">
-          <div class="panel-header">
-            <div class="panel-title">↑ Import CSV</div>
-          </div>
-          <div style="padding:24px 18px; display:flex; flex-direction:column; gap:16px;">
-            <div style="font-size:12px;color:var(--text2);">Supports Trading 212 CSV export format (Transactions.csv). Drag &amp; drop or click to select.</div>
-            <div id="drop-zone" style="border:2px dashed var(--border);border-radius:var(--radius);padding:48px;text-align:center;cursor:pointer;transition:all 0.15s;"
-              onclick="document.getElementById('csv-file').click()"
-              ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
-              ondragleave="this.style.borderColor='var(--border)'"
-              ondrop="handleDrop(event)"
-            >
-              <div style="font-size:32px;margin-bottom:12px;">📄</div>
-              <div style="font-family:var(--mono);font-size:13px;color:var(--text3);">Transactions.csv</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:6px;">T212 export · max 10 MB</div>
-            </div>
-            <input type="file" id="csv-file" accept=".csv" style="display:none;" onchange="handleFileSelect(this)">
-            <div id="import-status" style="font-family:var(--mono);font-size:12px;color:var(--text3);"></div>
           </div>
         </div>
       </div>
 
       <!-- ── SETTINGS ── -->
       <div class="page" id="page-settings">
-        <div class="panel" style="max-width:560px;">
-          <div class="tabs">
-            <div class="tab active" onclick="settingsTab(this,'stab-general')">General</div>
-            <div class="tab" onclick="settingsTab(this,'stab-currency')">Currency</div>
-            <div class="tab" onclick="settingsTab(this,'stab-tax')">Tax</div>
+        <div style="padding:20px 24px;">
+          <div style="font-size:20px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px;">Settings</div>
+          <div style="font-size:12px;color:var(--text3);">Manage your account and preferences.</div>
+        </div>
+        <div style="display:flex;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+          <div style="width:180px;min-width:180px;border-right:1px solid var(--border);padding:8px 0;">
+            <div style="padding:7px 16px;font-size:13px;font-weight:500;background:var(--surface2);color:var(--text);cursor:pointer;">Profile</div>
+            <div style="padding:7px 16px;font-size:13px;color:var(--text2);cursor:pointer;">Account</div>
           </div>
-          <div id="stab-general" style="padding:20px 18px; display:flex; flex-direction:column; gap:14px;">
-            <div>
-              <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">Display name</div>
-              <input type="text" value="radovan" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;padding:7px 10px;border-radius:var(--radius);width:100%;font-family:var(--sans);">
+          <div style="flex:1;padding:20px 24px;">
+            <div style="font-size:16px;font-weight:600;margin-bottom:6px;">Profile</div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">Pick a display name and avatar — what other users see in the chat.</div>
+            <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">AVATAR</div>
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+              <div style="width:50px;height:50px;border-radius:50%;background:#c8856b;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;">RA</div>
+              <div>
+                <div style="font-size:12px;color:var(--green);cursor:pointer;margin-bottom:3px;">Upload avatar</div>
+                <div style="font-size:11px;color:var(--text3);">JPEG, PNG, or WebP · resized to 256×256</div>
+              </div>
             </div>
-            <div>
-              <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">Default portfolio</div>
-              <select style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;padding:7px 10px;border-radius:var(--radius);width:100%;font-family:var(--sans);">
-                <option>Main Portfolio</option>
-                <option>Trading 212 ISA</option>
-              </select>
-            </div>
-          </div>
-          <div id="stab-currency" style="padding:20px 18px; display:none; flex-direction:column; gap:14px;">
-            <div>
-              <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">Base currency</div>
-              <select style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;padding:7px 10px;border-radius:var(--radius);width:100%;font-family:var(--sans);">
-                <option>EUR</option><option>CZK</option><option>USD</option><option>GBP</option>
-              </select>
-            </div>
-            <div style="font-size:11px;color:var(--text3);font-family:var(--mono);">Rates are fetched from ECB daily. CZK, EUR, USD, GBP — because losing money in one currency wasn't enough.</div>
-          </div>
-          <div id="stab-tax" style="padding:20px 18px; display:none; flex-direction:column; gap:14px;">
-            <div>
-              <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">Tax jurisdiction</div>
-              <select style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;padding:7px 10px;border-radius:var(--radius);width:100%;font-family:var(--sans);">
-                <option>Slovakia (§9 ZDP)</option>
-                <option>Czech Republic</option>
-                <option>None / Manual</option>
-              </select>
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">Tax rate</div>
-              <input type="text" value="7%" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;padding:7px 10px;border-radius:var(--radius);width:100%;font-family:var(--mono);">
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">§9 ZDP exemption threshold (€)</div>
-              <input type="text" value="500" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;padding:7px 10px;border-radius:var(--radius);width:100%;font-family:var(--mono);">
-            </div>
+            <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">DISPLAY NAME</div>
+            <input type="text" value="Radovan" style="width:260px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:5px;font-size:13px;display:block;margin-bottom:6px;">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">2–32 characters · letters, digits, _-./space · must start and end with a letter or digit · unique (case-insensitive)</div>
+            <div style="font-size:11px;color:var(--green);">✓ Available</div>
+            <button style="margin-top:16px;background:var(--green);color:#fff;border:none;border-radius:5px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;">Create profile</button>
           </div>
         </div>
       </div>
 
+      <!-- ── PLACEHOLDER PAGES ── -->
+      <div class="page" id="page-watchlist"><div style="padding:40px 24px;color:var(--text3);font-size:13px;">Watchlist coming soon.</div></div>
+      <div class="page" id="page-snapshot"><div style="padding:40px 24px;color:var(--text3);font-size:13px;">Snapshot page.</div></div>
+      <div class="page" id="page-whats-new"><div style="padding:40px 24px;color:var(--text3);font-size:13px;">What's new.</div></div>
+
     </div><!-- /content -->
-  </main>
+
+    <!-- CHAT PANEL (LAMENTATION) -->
+    <div class="chat-panel">
+      <div class="chat-header">
+        <div class="chat-title">LAMENTATION</div>
+        <div class="chat-icons">⚙ ✕</div>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div style="text-align:center;padding:6px;border-top:1px solid var(--border);font-size:11px;color:var(--green);cursor:pointer;">↓ Latest</div>
+      <div class="chat-input-row">
+        <input class="chat-input" placeholder="Write a message...">
+        <div class="chat-input-icons">😊 📎 GIF</div>
+        <button style="background:var(--green);color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:12px;cursor:pointer;">Send</button>
+      </div>
+    </div>
+  </div>
+</main>
 </div>
 
 <script>
 // ── DATA ──
 const holdings = [
-  { ticker:'VWCE', name:'Vanguard FTSE All-World', qty:28.4,  cost:88.12, price:95.40, currency:'EUR' },
-  { ticker:'AAPL', name:'Apple Inc.',              qty:10,    cost:151.20, price:189.30, currency:'USD' },
-  { ticker:'MSFT', name:'Microsoft Corp.',         qty:5,     cost:310.00, price:415.80, currency:'USD' },
-  { ticker:'XDWD', name:'iShares MSCI World',      qty:42,    cost:74.10,  price:81.22, currency:'EUR' },
-  { ticker:'2B76', name:'iShares Core MSCI EM',    qty:30,    cost:24.50,  price:23.80, currency:'EUR' },
-  { ticker:'BRK.B',name:'Berkshire Hathaway B',    qty:3,     cost:320.00, price:411.00, currency:'USD' },
-  { ticker:'IWDA', name:'iShares Core MSCI World', qty:18,    cost:76.20,  price:86.90, currency:'EUR' },
+  { ticker:'BRK.B', name:'Berkshire Hathaway Inc', type:'STOCK', qty:1.41,     price:483.68, cost:314.72, day:-5.77,  dayPct:-0.84, value:681.83, pl:238.17, plPct:53.68,  weight:23.8 },
+  { ticker:'META',  name:'Meta Platforms Inc.',    type:'STOCK', qty:0.700186,  price:570.98, cost:355.11, day:0,      dayPct:0,     value:399.79, pl:151.15, plPct:60.79,  weight:14.0 },
+  { ticker:'MSFT',  name:'Microsoft Corporation',  type:'STOCK', qty:1.00,      price:397.36, cost:338.55, day:0,      dayPct:0,     value:397.62, pl:58.84,  plPct:17.37,  weight:13.9 },
+  { ticker:'GOOGL', name:'Alphabet Inc.',           type:'STOCK', qty:1.01,      price:356.26, cost:165.56, day:0,      dayPct:0,     value:358.32, pl:191.80, plPct:115.18, weight:12.5 },
+  { ticker:'AMZN',  name:'Amazon.com Inc.',         type:'STOCK', qty:1.00,      price:237.93, cost:146.96, day:0,      dayPct:0,     value:239.11, pl:91.42,  plPct:61.90,  weight:8.3  },
+  { ticker:'BABA',  name:'Alibaba Group Holding...', type:'STOCK', qty:1.42,     price:115.45, cost:236.27, day:0,      dayPct:0,     value:164.18, pl:-171.82,plPct:-51.14, weight:5.7  },
+  { ticker:'WM',    name:'Waste Management, Inc.',  type:'STOCK', qty:0.701666,  price:224.24, cost:199.21, day:0,      dayPct:0,     value:157.34, pl:17.57,  plPct:12.57,  weight:5.5  },
+  { ticker:'AAPL',  name:'Apple Inc.',              type:'STOCK', qty:0.500747,  price:291.58, cost:232.65, day:0,      dayPct:0,     value:146.01, pl:29.51,  plPct:25.33,  weight:5.1  },
+  { ticker:'MDT',   name:'Medtronic plc',           type:'STOCK', qty:1.50,      price:80.26,  cost:84.17,  day:0,      dayPct:0,     value:120.68, pl:-5.89,  plPct:-4.65,  weight:4.2  },
+  { ticker:'JNJ',   name:'Johnson & Johnson',       type:'STOCK', qty:0.505645,  price:238.51, cost:144.37, day:0,      dayPct:0,     value:120.60, pl:47.60,  plPct:65.21,  weight:4.2  },
+  { ticker:'DBX',   name:'Dropbox, Inc.',           type:'STOCK', qty:1.00,      price:27.65,  cost:28.16,  day:0,      dayPct:0,     value:27.65,  pl:-0.51,  plPct:-1.81,  weight:1.0  },
+  { ticker:'ABT',   name:'Abbott Laboratories',     type:'STOCK', qty:0.300000,  price:89.14,  cost:92.67,  day:0,      dayPct:0,     value:26.74,  pl:-1.06,  plPct:-3.81,  weight:0.9  },
+  { ticker:'NIO',   name:'NIO Inc.',                type:'STOCK', qty:5.00,      price:5.18,   cost:35.34,  day:0,      dayPct:0,     value:25.89,  pl:-150.89,plPct:-85.36, weight:0.9  },
 ];
 
-const divUpcoming = [
-  { ticker:'VWCE', exDate:'2026-06-20', payDate:'2026-07-05', shares:28.4, divPerShare:0.42 },
-  { ticker:'AAPL', exDate:'2026-07-04', payDate:'2026-07-18', shares:10,   divPerShare:0.25 },
-  { ticker:'MSFT', exDate:'2026-07-10', payDate:'2026-07-25', shares:5,    divPerShare:0.75 },
+const divData = [
+  { ticker:'BABA', name:'Alibaba Group Holding Ltd.', yield:'2.64%', yoc:'1.29%', dps:'$3.05', ttm:'$4.34', payout:'40.9%', cagr:'+42.86%', streak:'2y'  },
+  { ticker:'MDT',  name:'Medtronic plc',              yield:'4.44%', yoc:'4.23%', dps:'$3.56', ttm:'$4.27', payout:'75.8%', cagr:'+4.42%',  streak:'12y' },
+  { ticker:'JNJ',  name:'Johnson & Johnson',          yield:'2.20%', yoc:'3.63%', dps:'$5.24', ttm:'$2.65', payout:'44.6%', cagr:'+5.25%',  streak:'55y' },
+  { ticker:'MSFT', name:'Microsoft Corporation',      yield:'0.90%', yoc:'1.05%', dps:'$3.56', ttm:'$2.42', payout:'15.3%', cagr:'+10.22%', streak:'20y' },
+  { ticker:'WM',   name:'Waste Management, Inc.',     yield:'1.58%', yoc:'1.78%', dps:'$3.54', ttm:'$1.72', payout:'35.7%', cagr:'+8.65%',  streak:'22y' },
+  { ticker:'META', name:'Meta Platforms Inc.',        yield:'0.46%', yoc:'0.74%', dps:'$2.63', ttm:'$1.21', payout:'5.7%',  cagr:'+5.00%',  streak:'1y'  },
+  { ticker:'GOOGL',name:'Alphabet Inc.',              yield:'0.24%', yoc:'0.51%', dps:'$8.85', ttm:'$0.85', payout:'6.3%',  cagr:'+38.33%', streak:'1y'  },
+  { ticker:'ABT',  name:'Abbott Laboratories',        yield:'2.74%', yoc:'2.63%', dps:'$2.44', ttm:'$0.73', payout:'49.2%', cagr:'+10.38%', streak:'12y' },
+  { ticker:'AAPL', name:'Apple Inc.',                 yield:'0.36%', yoc:'0.45%', dps:'$1.05', ttm:'$0.32', payout:'9.6%',  cagr:'+4.99%',  streak:'13y' },
 ];
-const divHistory = [
-  { date:'2026-04-05', ticker:'VWCE', name:'Vanguard FTSE All-World', amount:11.93, tax:1.79 },
-  { date:'2026-03-20', ticker:'AAPL', name:'Apple Inc.',              amount:2.50,  tax:0.38 },
-  { date:'2026-02-14', ticker:'MSFT', name:'Microsoft Corp.',         amount:3.75,  tax:0.56 },
-  { date:'2026-01-08', ticker:'VWCE', name:'Vanguard FTSE All-World', amount:11.20, tax:1.68 },
+const recentDivs = [
+  { ticker:'BABA',  date:'Jun 11',  formula:'$1.05 × 1.42', total:'$1.49' },
+  { ticker:'GOOGL', date:'Jun 8',   formula:'$0.22 × 1.01', total:'$0.22' },
+  { ticker:'WM',    date:'Jun 5',   formula:'$0.95 × 0.70', total:'$8.66' },
+  { ticker:'JNJ',   date:'May 26',  formula:'$1.34 × 0.51', total:'$0.68' },
+  { ticker:'MSFT',  date:'May 21',  formula:'$0.91 × 1.00', total:'$8.91' },
+  { ticker:'AAPL',  date:'May 11',  formula:'$0.27 × 0.50', total:'$0.14' },
+  { ticker:'ABT',   date:'Apr 15',  formula:'$0.63 × 0.30', total:'$8.19' },
 ];
-const taxLots = [
-  { ticker:'AAPL', buyDate:'2024-11-03', sellDate:'2026-01-15', qty:5, avgCost:145.00, sellPrice:185.00, held:439, exempt:true },
-  { ticker:'MSFT', buyDate:'2025-03-10', sellDate:'2026-02-28', qty:2, avgCost:315.00, sellPrice:400.00, held:355, exempt:false },
-  { ticker:'VOO',  buyDate:'2025-06-01', sellDate:'2026-05-10', qty:3, avgCost:480.00, sellPrice:530.00, held:343, exempt:false },
+const taxDivs = [
+  { ticker:'MSFT',  asset:'Microsoft Corporation',       gross:'$1.55', payments:2 },
+  { ticker:'BABA',  asset:'Alibaba Group Holding Ltd.',  gross:'$1.49', payments:1 },
+  { ticker:'JNJ',   asset:'Johnson & Johnson',           gross:'$1.33', payments:2 },
+  { ticker:'WM',    asset:'Waste Management, Inc.',      gross:'$1.14', payments:2 },
+  { ticker:'MDT',   asset:'Medtronic plc',               gross:'$1.07', payments:1 },
+  { ticker:'GOOGL', asset:'Alphabet Inc.',               gross:'$0.43', payments:2 },
+  { ticker:'ABT',   asset:'Abbott Laboratories',         gross:'$0.38', payments:2 },
+  { ticker:'META',  asset:'Meta Platforms Inc.',         gross:'$0.37', payments:1 },
+  { ticker:'AAPL',  asset:'Apple Inc.',                  gross:'$0.20', payments:2 },
 ];
-const cashAccounts = [
-  { broker:'Trading 212', account:'ISA', currency:'GBP', cash:480.00, portfolio:8200.00 },
-  { broker:'Trading 212', account:'Invest', currency:'EUR', cash:1200.00, portfolio:16118.42 },
-  { broker:'Revolut',     account:'Stocks', currency:'EUR', cash:1530.00, portfolio:0 },
+const transactions = [
+  { date:'May 1, 2026',  type:'Buy', ticker:'AAPL',  name:'Apple Inc.',              qty:0.27,   price:282.93, total:-76.39  },
+  { date:'Apr 8, 2026',  type:'Buy', ticker:'MSFT',  name:'Microsoft Corporation',   qty:0.30,   price:380.90, total:-114.27 },
+  { date:'Mar 31, 2026', type:'Buy', ticker:'WM',    name:'Waste Management, Inc.',  qty:0.20,   price:228.60, total:-45.72  },
+  { date:'Feb 17, 2026', type:'Buy', ticker:'MSFT',  name:'Microsoft Corporation',   qty:0.20,   price:398.40, total:-79.68  },
+  { date:'Feb 17, 2026', type:'Buy', ticker:'AMZN',  name:'Amazon.com Inc.',         qty:0.27,   price:201.44, total:-54.39  },
+  { date:'Jan 30, 2026', type:'Buy', ticker:'BRK.B', name:'Berkshire Hathaway Inc',  qty:0.10,   price:478.30, total:-47.83  },
+  { date:'Dec 29, 2025', type:'Buy', ticker:'META',  name:'Meta Platforms Inc.',     qty:0.10,   price:657.30, total:-65.73  },
+  { date:'Nov 10, 2025', type:'Buy', ticker:'META',  name:'Meta Platforms Inc.',     qty:0.10,   price:631.20, total:-63.12  },
+  { date:'Oct 28, 2025', type:'Buy', ticker:'WM',    name:'Waste Management, Inc.',  qty:0.30,   price:207.23, total:-62.17  },
+  { date:'Aug 15, 2025', type:'Buy', ticker:'BRK.B', name:'Berkshire Hathaway Inc',  qty:0.10,   price:477.60, total:-47.76  },
 ];
-const terminalData = {
-  'P/E Ratio': '29.4',
-  'EPS (TTM)': '$6.44',
-  'Revenue (TTM)': '$391.0B',
-  'Net Income': '$99.8B',
-  'Gross Margin': '46.2%',
-  'Div Yield': '0.52%',
-  'Market Cap': '$2.92T',
-  '52W High': '$201.80',
-  '52W Low': '$164.08',
-  'Beta': '1.24',
-  'ROE': '147.9%',
-  'Debt/Equity': '1.87',
-};
+const chatMessages = [
+  { user:'TMNE',         color:'#6b8ed6', time:'06/10, 5:40 PM',  text:"↪ Milan: nejde na to udělat brychtabota ktery te prípadnym importem provede? :D nebo pod...",  reactions:[{e:'↩',n:1}] },
+  { user:'StanislavPilat', color:'#7ba882', time:'06/10, 5:48 PM', text:"Kdo nezvládne import, nezaslouží si ani free verzi :D", reactions:[{e:'❤',n:8},{e:'👍',n:1},{e:'😡',n:1}] },
+  { user:'Archbishop',   color:'#c87c5a', time:'06/10, 6:00 PM',  text:"↪ Milan: nejde na to udělat brychtabota ktery te prípadnym importem provede? :D nebo pod...\n\nasí jo, ale já se nechci zabývat importy, to je ten největší problém 😤", reactions:[{e:'❤',n:3}] },
+  { user:'PatchmaN',     color:'#9b7ec8', time:'06/10, 9:16 PM',  text:"já jsem si svým 1200 transakcí udělal ručně :D", reactions:[{e:'❤',n:3}] },
+  { user:'Milan',        color:'#5b9bd5', time:'06/10, 10:26 PM', text:"Oracle výsledky v topu: Jedná se o nejlepší kvartál Oracle za posledních 15 let. Oracle zaznamenal rekordní kvartál s celkovými tržbami 17,2 miliardy USD (+22 %), přičemž hlavní cloudová infrastruktura (IaaS) díky AI poptávce explodovala o 84 % na 4,9 miliardy USD.", reactions:[{e:'👍',n:1}] },
+];
 
 // ── NAV ──
-const pageTitles = {
-  dashboard:'Dashboard', performance:'Performance', dividends:'Dividends',
-  taxes:'FIFO Taxes', terminal:'Terminal', cash:'Cash & Brokers',
-  import:'Import CSV', settings:'Settings'
-};
 function nav(page, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pg = document.getElementById('page-'+page);
+  if (pg) pg.classList.add('active');
   if (el) el.classList.add('active');
-  document.getElementById('topbar-title').textContent = pageTitles[page] || page;
+  const titles = { dashboard:'Dashboard', performance:'Performance', dividends:'Dividends', taxes:'Taxes', transactions:'Transactions', terminal:'Terminal', settings:'Settings', watchlist:'Watchlist', snapshot:'Snapshot' };
+  document.getElementById('topbar-page').textContent = titles[page] || page;
+  const showViews = page === 'dashboard';
+  document.getElementById('topbar-views').style.display = showViews ? 'flex' : 'none';
+  // draw chart on performance
+  if (page === 'performance') setTimeout(() => drawPerfChart(), 30);
+}
+function setView(v, el) {
+  document.querySelectorAll('.view-btn').forEach(b=>{ if(!b.classList.contains('locked')) b.classList.remove('active'); });
+  el.classList.add('active');
 }
 
 // ── RENDER HOLDINGS ──
 function renderHoldings() {
-  const tbody = document.getElementById('holdings-tbody');
-  tbody.innerHTML = holdings.map(h => {
-    const value = h.qty * h.price;
-    const pl    = (h.price - h.cost) * h.qty;
-    const plPct = ((h.price / h.cost) - 1) * 100;
-    const cls   = plPct >= 0 ? 'up' : 'down';
-    const sign  = plPct >= 0 ? '+' : '';
+  const tb = document.getElementById('holdings-tbody');
+  tb.innerHTML = holdings.map(h => {
+    const dCls = h.day < 0 ? 'red' : (h.day > 0 ? 'green' : '');
+    const pCls = h.pl < 0 ? 'red' : 'green';
+    const dSign = h.day > 0 ? '+' : '';
+    const pSign = h.pl > 0 ? '+' : '';
     return `<tr>
-      <td class="name">${h.ticker}</td>
-      <td style="color:var(--text2);font-family:var(--sans);font-size:12px;">${h.name}</td>
-      <td class="r">${h.qty.toFixed(2)}</td>
-      <td class="r">${h.cost.toFixed(2)}</td>
-      <td class="r">${h.price.toFixed(2)}</td>
-      <td class="r" style="color:var(--text);">€${value.toFixed(0)}</td>
-      <td class="r ${cls}">${sign}${plPct.toFixed(2)}%</td>
+      <td><div class="td-inner">
+        <div style="display:flex;align-items:center;gap:4px;">
+          <button class="expand-btn">▶</button>
+          <div>
+            <div class="asset-ticker">${h.ticker}</div>
+            <div class="asset-name">${h.name}</div>
+            <div class="asset-type">${h.type}</div>
+          </div>
+        </div>
+      </div></td>
+      <td class="r"><div class="td-inner" style="font-family:var(--mono);font-size:12px;color:var(--text2);">${h.qty.toFixed(h.qty<1?6:2)}</div></td>
+      <td class="r"><div class="td-inner"><div class="two-line">
+        <span class="top">$${h.price.toFixed(2)}</span>
+        <span class="bot">$${h.cost.toFixed(2)}</span>
+      </div></div></td>
+      <td class="r"><div class="td-inner"><div class="two-line">
+        <span class="top ${dCls}">${dSign}$${Math.abs(h.day).toFixed(2)}</span>
+        <span class="bot ${dCls}">${dSign}${h.dayPct.toFixed(2)}%</span>
+      </div></div></td>
+      <td class="r"><div class="td-inner" style="font-family:var(--mono);font-size:12px;color:var(--text);">$${h.value.toFixed(2)}</div></td>
+      <td class="r"><div class="td-inner"><div class="two-line">
+        <span class="top ${pCls}">${pSign}$${Math.abs(h.pl).toFixed(2)}</span>
+        <span class="bot ${pCls}">${pSign}${h.plPct.toFixed(2)}%</span>
+      </div></div></td>
+      <td class="r"><div class="td-inner"><div class="two-line">
+        <span class="top">$0.00</span><span class="bot">+0.00%</span>
+      </div></div></td>
+      <td class="r"><div class="td-inner" style="font-family:var(--mono);font-size:12px;color:var(--text2);">${h.weight.toFixed(1)}%</div></td>
     </tr>`;
   }).join('');
 }
 
-// ── ALLOCATION ──
-function renderAlloc() {
-  const total = holdings.reduce((s,h) => s + h.qty*h.price, 0);
-  const colors = ['#4ade80','#60a5fa','#fbbf24','#f87171','#a78bfa','#34d399','#fb923c'];
-  const sorted = [...holdings].sort((a,b) => b.qty*b.price - a.qty*a.price);
-
-  // Donut SVG
-  const cx=65, cy=65, r=50, iR=34;
-  let angle = -Math.PI/2;
-  let paths = '';
-  sorted.forEach((h,i) => {
-    const pct = (h.qty*h.price) / total;
-    const sweep = pct * 2 * Math.PI;
-    const x1=cx+r*Math.cos(angle), y1=cy+r*Math.sin(angle);
-    angle += sweep;
-    const x2=cx+r*Math.cos(angle), y2=cy+r*Math.sin(angle);
-    const ix1=cx+iR*Math.cos(angle-sweep), iy1=cy+iR*Math.sin(angle-sweep);
-    const ix2=cx+iR*Math.cos(angle), iy2=cy+iR*Math.sin(angle);
-    const large = sweep > Math.PI ? 1 : 0;
-    paths += `<path d="M${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} L${ix2},${iy2} A${iR},${iR} 0 ${large},0 ${ix1},${iy1} Z"
-      fill="${colors[i%colors.length]}" opacity="0.9"/>`;
-  });
-  document.getElementById('donut-svg').innerHTML = paths +
-    `<text x="65" y="60" text-anchor="middle" font-size="10" fill="var(--text3)">Portfolio</text>
-     <text x="65" y="75" text-anchor="middle" font-size="11" fill="var(--text)" font-weight="600">€24,318</text>`;
-
-  // Bar list
-  const list = document.getElementById('alloc-list');
-  list.innerHTML = sorted.slice(0,6).map((h,i) => {
-    const pct = ((h.qty*h.price) / total * 100).toFixed(1);
-    return `<div class="alloc-row">
-      <div class="alloc-label">${h.ticker}</div>
-      <div class="alloc-bar-bg"><div class="alloc-bar" style="width:${pct}%;background:${colors[i%colors.length]}"></div></div>
-      <div class="alloc-pct">${pct}%</div>
-    </div>`;
+// ── SPECTRUM BAR ──
+function renderSpectrum() {
+  const bar = document.getElementById('spectrum-bar');
+  const total = holdings.reduce((s,h)=>s+h.value,0);
+  bar.innerHTML = holdings.map(h => {
+    const w = (h.value/total*100).toFixed(1);
+    const cls = h.pl >= 0 ? 'pos' : 'neg';
+    return `<div class="spec-seg ${cls}" style="flex:${w}" title="${h.ticker} ${h.plPct.toFixed(1)}%">${h.ticker}</div>`;
   }).join('');
 }
 
-// ── PERFORMANCE CHART ──
-function drawPerfChart(svgId, h=160) {
-  const svg = document.getElementById(svgId);
-  if (!svg) return;
-  const W = svg.clientWidth || 500;
-  const pts = 60;
-  const portData  = Array.from({length:pts}, (_,i) => 1 + 0.001*i + 0.008*Math.sin(i*0.4) + 0.0003*i*Math.sin(i*0.1));
-  const spData    = Array.from({length:pts}, (_,i) => 1 + 0.0008*i + 0.005*Math.cos(i*0.3));
-  const pad = {l:10, r:10, t:10, b:24};
-  const cw = W - pad.l - pad.r, ch = h - pad.t - pad.b;
-  const allV = [...portData,...spData];
-  const mn = Math.min(...allV), mx = Math.max(...allV);
-  const sx = i => pad.l + (i/(pts-1))*cw;
-  const sy = v => pad.t + ch - ((v-mn)/(mx-mn))*ch;
-  const line = arr => arr.map((v,i)=>`${i?'L':'M'}${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(' ');
-  const fill = arr => line(arr) + ` L${sx(pts-1)},${pad.t+ch} L${pad.l},${pad.t+ch} Z`;
-  svg.innerHTML = `
-    <defs>
-      <linearGradient id="g1_${svgId}" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#4ade80" stop-opacity="0.25"/>
-        <stop offset="100%" stop-color="#4ade80" stop-opacity="0"/>
-      </linearGradient>
-    </defs>
-    <path d="${fill(portData)}" fill="url(#g1_${svgId})"/>
-    <path d="${line(portData)}" fill="none" stroke="#4ade80" stroke-width="1.5"/>
-    <path d="${line(spData)}"   fill="none" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.6"/>
-    <text x="${pad.l+4}" y="${h-6}" font-size="9" fill="var(--text3)">Portfolio</text>
-    <text x="${pad.l+60}" y="${h-6}" font-size="9" fill="#60a5fa" opacity="0.7">S&amp;P 500</text>
+// ── RIGHT SIDEBAR ──
+function renderRightSidebar() {
+  const colors = ['#4a9e6e','#7b5ea7','#d9a23c','#5b9bd5','#d64545','#6bc8a8','#c87c5a','#8fbc5e','#9b7ec8','#5aa0c8'];
+  const top10 = holdings.slice(0,10);
+  const alloc = [{ name:'STOCK', pct:100 }];
+  const ages = [
+    { label:'< 3m',  pct:8.5,  buys:3  },
+    { label:'3–12m', pct:18.2, buys:8  },
+    { label:'1y–3y', pct:20.6, buys:10 },
+    { label:'3y+',   pct:52.7, buys:36 },
+  ];
+  const currs = [{ name:'USD', val:'$2.87K', pct:100 }];
+
+  document.getElementById('sidebar-right').innerHTML = `
+    <div class="rs-section">
+      <div class="rs-title">Composition</div>
+      <div class="rs-subtitle">Top 10 · 13 total</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:auto auto;gap:2px;">
+        <div class="tm-cell" style="background:${colors[0]};grid-row:1/3;grid-column:1;min-height:70px;">
+          ${top10[0].ticker}<div class="tm-pct">${top10[0].weight}%</div>
+        </div>
+        ${top10.slice(1,5).map((h,i)=>`<div class="tm-cell" style="background:${colors[i+1]};min-height:32px;">${h.ticker}</div>`).join('')}
+        ${top10.slice(5,9).map((h,i)=>`<div class="tm-cell" style="background:${colors[i+5]};min-height:32px;">${h.ticker}</div>`).join('')}
+        <div class="tm-cell" style="background:var(--border);color:var(--text3);min-height:32px;">Other</div>
+      </div>
+    </div>
+    <div class="rs-section">
+      <div class="rs-title">Allocation</div>
+      ${alloc.map(a=>`<div class="alloc-row">
+        <div class="alloc-name">${a.name}</div>
+        <div class="alloc-track"><div class="alloc-fill" style="width:${a.pct}%"></div></div>
+        <div class="alloc-pct">${a.pct.toFixed(1)}%</div>
+      </div>`).join('')}
+    </div>
+    <div class="rs-section">
+      <div class="rs-title" style="display:flex;justify-content:space-between;">Position Age <span style="font-weight:400;color:var(--text3)">buys</span></div>
+      ${ages.map(a=>`<div class="age-row">
+        <div class="age-label">${a.label}</div>
+        <div class="age-track"><div class="age-fill" style="width:${a.pct*1.5}%"></div></div>
+        <div class="age-pct">${a.pct}%</div>
+        <div class="age-buys">${a.buys}</div>
+      </div>`).join('')}
+    </div>
+    <div class="rs-section">
+      <div class="rs-title">Currencies</div>
+      ${currs.map(c=>`<div class="alloc-row">
+        <div class="alloc-name">${c.name}</div>
+        <div class="alloc-track"><div class="alloc-fill" style="width:${c.pct}%"></div></div>
+        <div class="alloc-pct" style="width:52px;">${c.val}</div>
+        <div style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-left:2px;">${c.pct}%</div>
+      </div>`).join('')}
+    </div>
   `;
 }
 
 // ── DIVIDENDS ──
 function renderDividends() {
-  const upcoming = document.getElementById('upcoming-divs');
-  upcoming.innerHTML = divUpcoming.map(d => {
-    const total = (d.shares * d.divPerShare).toFixed(2);
-    return `<div class="div-row">
-      <span class="div-name">${d.ticker}</span>
-      <span class="div-date">${d.exDate}</span>
-      <span class="div-amt">€${total}</span>
-    </div>`;
-  }).join('');
-
-  // full page
-  const uT = document.getElementById('div-upcoming-tbody');
-  if (uT) uT.innerHTML = divUpcoming.map(d => `<tr>
-    <td class="name">${d.ticker}</td>
-    <td>${d.exDate}</td><td>${d.payDate}</td>
-    <td class="r">${d.shares}</td>
-    <td class="r">€${d.divPerShare.toFixed(2)}</td>
-    <td class="r up">€${(d.shares*d.divPerShare).toFixed(2)}</td>
+  const tb = document.getElementById('div-tbody');
+  if (tb) tb.innerHTML = divData.map(d=>`<tr>
+    <td><div class="td-inner"><div class="asset-ticker">${d.ticker}</div><div class="asset-name">${d.name}</div></div></td>
+    <td class="r"><div class="td-inner" style="font-family:var(--mono);font-size:12px;">${d.yield}</div></td>
+    <td class="r"><div class="td-inner green" style="font-family:var(--mono);font-size:12px;">${d.yoc}</div></td>
+    <td class="r"><div class="td-inner" style="font-family:var(--mono);font-size:12px;">${d.dps}</div></td>
+    <td class="r"><div class="td-inner green" style="font-family:var(--mono);font-size:12px;">${d.ttm}</div></td>
+    <td class="r"><div class="td-inner" style="font-family:var(--mono);font-size:12px;">${d.payout}</div></td>
+    <td class="r"><div class="td-inner green" style="font-family:var(--mono);font-size:12px;">${d.cagr}</div></td>
+    <td class="r"><div class="td-inner" style="font-family:var(--mono);font-size:12px;">${d.streak}</div></td>
   </tr>`).join('');
 
-  const hT = document.getElementById('div-history-tbody');
-  if (hT) hT.innerHTML = divHistory.map(d => `<tr>
-    <td>${d.date}</td>
-    <td class="name">${d.ticker}</td>
-    <td style="color:var(--text2);font-family:var(--sans)">${d.name}</td>
-    <td class="r up">€${d.amount.toFixed(2)}</td>
-    <td class="r down">€${d.tax.toFixed(2)}</td>
-    <td class="r up">€${(d.amount-d.tax).toFixed(2)}</td>
+  const rt = document.getElementById('div-recent-tbody');
+  if (rt) rt.innerHTML = recentDivs.map(d=>`<tr>
+    <td><div class="td-inner"><span class="asset-ticker">${d.ticker}</span></div></td>
+    <td><div class="td-inner" style="font-size:12px;color:var(--text3);">${d.date}</div></td>
+    <td class="r"><div class="td-inner" style="font-family:var(--mono);font-size:12px;color:var(--text2);">${d.formula}</div></td>
+    <td class="r"><div class="td-inner green" style="font-family:var(--mono);font-size:12px;">${d.total}</div></td>
   </tr>`).join('');
 }
 
-// ── TAX ──
-function renderTax() {
+// ── TAXES ──
+function renderTaxes() {
   const tb = document.getElementById('tax-tbody');
-  if (tb) tb.innerHTML = taxLots.map(l => {
-    const gain = (l.sellPrice - l.avgCost) * l.qty;
-    const cls = gain >= 0 ? 'up' : 'down';
-    return `<tr>
-      <td class="name">${l.ticker}</td>
-      <td>${l.buyDate}</td><td>${l.sellDate}</td>
-      <td class="r">${l.qty}</td>
-      <td class="r">$${l.avgCost.toFixed(2)}</td>
-      <td class="r">$${l.sellPrice.toFixed(2)}</td>
-      <td class="r ${cls}">${gain>=0?'+':''}€${gain.toFixed(2)}</td>
-      <td class="r">${l.held}</td>
-      <td class="r" style="color:${l.exempt?'var(--accent)':'var(--red)'}">${l.exempt?'✓ Yes':'✗ No'}</td>
-    </tr>`;
-  }).join('');
+  if (tb) tb.innerHTML = taxDivs.map(d=>`<tr>
+    <td><div class="td-inner"><span class="asset-ticker">${d.ticker}</span></div></td>
+    <td><div class="td-inner" style="font-size:12px;color:var(--text2);">${d.asset}</div></td>
+    <td class="r"><div class="td-inner green" style="font-family:var(--mono);font-size:12px;">${d.gross}</div></td>
+    <td class="r"><div class="td-inner" style="font-family:var(--mono);font-size:12px;color:var(--text2);">${d.payments}</div></td>
+    <td class="r"><div class="td-inner" style="font-family:var(--mono);font-size:12px;color:var(--text3);">—</div></td>
+  </tr>`).join('') + `<tr style="font-weight:700;background:var(--surface2);">
+    <td><div class="td-inner" style="font-size:12px;">Total</div></td>
+    <td colspan="2" class="r"><div class="td-inner green" style="font-family:var(--mono);font-size:12px;">$7.95</div></td>
+    <td colspan="2"></td>
+  </tr>`;
 }
 
-// ── PERFORMANCE PAGE ──
-function renderPerf() {
-  const tb = document.getElementById('perf-tbody');
-  if (tb) tb.innerHTML = holdings.map(h => {
-    const value = h.qty * h.price;
-    const cost  = h.qty * h.cost;
-    const pl    = value - cost;
-    const plPct = (pl/cost*100);
-    const cls   = plPct >= 0 ? 'up' : 'down';
-    return `<tr>
-      <td class="name">${h.ticker}</td>
-      <td style="color:var(--text2);font-family:var(--sans);font-size:12px;">${h.name}</td>
-      <td class="r neutral">—</td>
-      <td class="r">€${cost.toFixed(0)}</td>
-      <td class="r">€${value.toFixed(0)}</td>
-      <td class="r ${cls}">${pl>=0?'+':''}€${pl.toFixed(0)}</td>
-      <td class="r ${cls}">${pl>=0?'+':''}${plPct.toFixed(2)}%</td>
-      <td class="r up">+${(value/24318*11.4).toFixed(2)}%</td>
-    </tr>`;
-  }).join('');
-}
-
-// ── CASH ──
-function renderCash() {
-  const tb = document.getElementById('cash-tbody');
-  if (tb) tb.innerHTML = cashAccounts.map(a => `<tr>
-    <td class="name">${a.broker}</td>
-    <td style="color:var(--text2)">${a.account}</td>
-    <td style="color:var(--text3);font-family:var(--mono)">${a.currency}</td>
-    <td class="r">€${a.cash.toFixed(2)}</td>
-    <td class="r up">€${a.portfolio.toFixed(2)}</td>
-    <td class="r" style="color:var(--text);">€${(a.cash+a.portfolio).toFixed(2)}</td>
+// ── TRANSACTIONS ──
+function renderTransactions() {
+  const tb = document.getElementById('tx-tbody');
+  if (tb) tb.innerHTML = transactions.map(t=>`<tr>
+    <td><div class="td-inner" style="font-size:12px;color:var(--text2);font-family:var(--mono);">${t.date}</div></td>
+    <td><div class="td-inner"><span style="background:var(--green-bg);color:var(--green);font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;">${t.type}</span></div></td>
+    <td><div class="td-inner"><span class="asset-ticker">${t.ticker}</span> <span style="font-size:11px;color:var(--text3);">${t.name}</span></div></td>
+    <td class="r"><div class="td-inner" style="font-family:var(--mono);font-size:12px;">${t.qty.toFixed(6)}</div></td>
+    <td class="r"><div class="td-inner" style="font-family:var(--mono);font-size:12px;">$${t.price.toFixed(2)}</div></td>
+    <td class="r"><div class="td-inner red" style="font-family:var(--mono);font-size:12px;">$${t.total.toFixed(2)}</div></td>
+    <td class="r"><div class="td-inner" style="color:var(--text3);">—</div></td>
+    <td><div class="td-inner" style="color:var(--text3);display:flex;gap:6px;">⋮ ×</div></td>
   </tr>`).join('');
 }
 
-// ── TERMINAL ──
-function renderTerminal() {
-  const el = document.getElementById('terminal-data');
-  if (!el) return;
-  const entries = Object.entries(terminalData);
-  el.innerHTML = entries.map(([k,v]) => `
-    <div class="terminal-line" style="border-bottom:1px solid var(--border);padding:10px 18px;">
-      <span class="key">${k}</span>
-      <span class="val">${v}</span>
-    </div>`).join('');
-}
-
-function terminalSearch() {
-  const q = document.getElementById('terminal-input').value.trim().toUpperCase() || 'AAPL';
-  document.querySelector('#terminal-result .panel-title').textContent = `~ ${q} — (demo data)`;
-  renderTerminal();
-}
-
-// ── SETTINGS TABS ──
-function settingsTab(el, tabId) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  ['stab-general','stab-currency','stab-tax'].forEach(id => {
-    const el2 = document.getElementById(id);
-    if (el2) el2.style.display = id===tabId ? 'flex' : 'none';
+// ── PERF CHART ──
+function drawPerfChart() {
+  const svg = document.getElementById('perf-svg');
+  if (!svg) return;
+  const W = svg.clientWidth || 700, H = 200;
+  const pts = 250;
+  let p = 1, s = 1;
+  const port = [], sp = [];
+  for (let i = 0; i < pts; i++) {
+    p += (Math.random()-0.46)*0.008;
+    s += (Math.random()-0.45)*0.006;
+    port.push(Math.max(0.7, p));
+    sp.push(Math.max(0.7, s));
+  }
+  const all = [...port,...sp];
+  const mn = Math.min(...all), mx = Math.max(...all);
+  const pad = { l:40, r:10, t:10, b:30 };
+  const cw = W-pad.l-pad.r, ch = H-pad.t-pad.b;
+  const sx = i => pad.l + (i/(pts-1))*cw;
+  const sy = v => pad.t + ch - ((v-mn)/(mx-mn))*ch;
+  const line = arr => arr.map((v,i)=>`${i?'L':'M'}${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join('');
+  // Y axis labels
+  const steps = 4;
+  let yLabels = '';
+  for (let i = 0; i <= steps; i++) {
+    const v = mn + (mx-mn)*(i/steps);
+    const y = sy(v);
+    const pct = ((v-1)*100).toFixed(0);
+    yLabels += `<line x1="${pad.l}" y1="${y.toFixed(0)}" x2="${W-pad.r}" y2="${y.toFixed(0)}" stroke="var(--border)" stroke-width="1"/>`;
+    yLabels += `<text x="${pad.l-4}" y="${(y+4).toFixed(0)}" text-anchor="end" font-size="9" fill="var(--text3)" font-family="var(--mono)">${pct}%</text>`;
+  }
+  // X axis dates
+  const months = ['Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26'];
+  let xLabels = '';
+  months.forEach((m,i) => {
+    const x = pad.l + (i/12)*cw;
+    xLabels += `<text x="${x.toFixed(0)}" y="${H-6}" text-anchor="middle" font-size="9" fill="var(--text3)" font-family="var(--mono)">${m}</text>`;
   });
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="pg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#3d8b6e" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#3d8b6e" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    ${yLabels}${xLabels}
+    <path d="${line(port)} L${sx(pts-1)},${pad.t+ch} L${pad.l},${pad.t+ch} Z" fill="url(#pg)"/>
+    <path d="${line(port)}" fill="none" stroke="#3d8b6e" stroke-width="1.5"/>
+    <path d="${line(sp)}" fill="none" stroke="#aaa" stroke-width="1.2" stroke-dasharray="4,3"/>
+  `;
 }
 
-// ── FILE IMPORT ──
-function handleDrop(e) {
-  e.preventDefault();
-  e.currentTarget.style.borderColor = 'var(--border)';
-  const file = e.dataTransfer.files[0];
-  if (file) processFile(file);
+// ── CHAT ──
+function renderChat() {
+  const colors = ['#6b8ed6','#7ba882','#c87c5a','#9b7ec8','#5b9bd5'];
+  document.getElementById('chat-messages').innerHTML = chatMessages.map((m,i) =>
+    `<div class="chat-msg">
+      <div class="chat-meta">
+        <div class="chat-avatar" style="background:${colors[i%colors.length]}">${m.user.slice(0,2).toUpperCase()}</div>
+        <span class="chat-user">${m.user}</span>
+        <span class="chat-time">${m.time}</span>
+      </div>
+      <div class="chat-text">${m.text.replace(/\n/g,'<br>')}</div>
+      <div class="chat-reactions">${m.reactions.map(r=>`<span class="chat-reaction">${r.e} ${r.n}</span>`).join('')}</div>
+    </div>`
+  ).join('');
 }
-function handleFileSelect(input) {
-  if (input.files[0]) processFile(input.files[0]);
-}
-function processFile(file) {
-  document.getElementById('import-status').textContent = `✓ Loaded: ${file.name} (${(file.size/1024).toFixed(1)} KB) — parsing…`;
-  setTimeout(() => {
-    document.getElementById('import-status').textContent = `✓ ${file.name} — 142 transactions imported. FIFO lots recalculated.`;
-  }, 800);
-}
-
-// ── PORTFOLIO SWITCH ──
-function switchPortfolio(val) { /* in real app: reload data */ }
-
-// ── PANEL TAB BTN TOGGLE ──
-document.querySelectorAll('.panel-actions').forEach(group => {
-  group.querySelectorAll('.panel-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      group.querySelectorAll('.panel-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
-});
 
 // ── INIT ──
 function init() {
   renderHoldings();
-  renderAlloc();
+  renderSpectrum();
+  renderRightSidebar();
   renderDividends();
-  renderTax();
-  renderPerf();
-  renderCash();
-  renderTerminal();
-  setTimeout(() => {
-    drawPerfChart('perf-chart', 160);
-    drawPerfChart('perf-chart2', 220);
-  }, 50);
+  renderTaxes();
+  renderTransactions();
+  renderChat();
 }
 window.addEventListener('load', init);
 window.addEventListener('resize', () => {
-  drawPerfChart('perf-chart', 160);
-  drawPerfChart('perf-chart2', 220);
+  if (document.getElementById('page-performance').classList.contains('active')) drawPerfChart();
+});
+
+// Tab/period switching
+document.querySelectorAll('.chart-tab, .period-tab').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const group = this.closest('.chart-tabs');
+    if (!group) return;
+    if (this.classList.contains('chart-tab')) {
+      group.querySelectorAll('.chart-tab').forEach(b=>b.classList.remove('active'));
+    } else {
+      group.querySelectorAll('.period-tab').forEach(b=>b.classList.remove('active'));
+    }
+    this.classList.add('active');
+  });
 });
 </script>
 </body>
