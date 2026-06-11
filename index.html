@@ -1148,12 +1148,11 @@ let txPage = 1, txPerPage = 25;
 function renderTransactions() {
   const txList = [...getTxList()].sort((a,b)=>b.date.localeCompare(a.date));
   const cur = curBroker==='ibkr'?'€':'$';
-  document.getElementById('tx-count').textContent = `${txList.length} transactions`;
+  const totalPages = Math.ceil(txList.length/txPerPage);
   const page = txList.slice((txPage-1)*txPerPage, txPage*txPerPage);
-  document.getElementById('tx-tbody').innerHTML = page.map((t,i)=>{
+  document.getElementById('tx-tbody').innerHTML = page.map((t)=>{
     const total = t.type==='Sell'||t.type==='Dividend'||t.type==='Deposit' ? t.price*(t.qty||1) : -(t.price*(t.qty||1)+t.fees);
     const totalCls = total>0?'green':'red';
-    const idx = txList.indexOf(t);
     return `<tr>
       <td><div class="td-i" style="font-family:var(--mono);font-size:12px;color:var(--text2)">${t.date}</div></td>
       <td><div class="td-i"><span class="type-badge ${t.type}">${t.type}</span></div></td>
@@ -1166,12 +1165,11 @@ function renderTransactions() {
     </tr>`;
   }).join('');
 
-  // Pagination
-  const total2 = Math.ceil(txList.length/txPerPage);
-  const pag = document.getElementById('tx-count');
-  if (pag) pag.textContent = `${txList.length} transactions · Page ${txPage}/${total2} · ` +
-    `<a href="#" onclick="txPage=Math.max(1,txPage-1);renderTransactions();return false" style="color:var(--green)">Prev</a> ` +
-    `<a href="#" onclick="txPage=Math.min(${total2},txPage+1);renderTransactions();return false" style="color:var(--green)">Next</a>`;
+  // Pagination — use innerHTML so the links render
+  document.getElementById('tx-count').innerHTML =
+    `${txList.length} transactions &nbsp;·&nbsp; Page ${txPage}/${totalPages} &nbsp;·&nbsp; ` +
+    `<a href="#" onclick="txPage=Math.max(1,txPage-1);renderTransactions();return false" style="color:var(--green)">← Prev</a> &nbsp; ` +
+    `<a href="#" onclick="txPage=Math.min(${totalPages},txPage+1);renderTransactions();return false" style="color:var(--green)">Next →</a>`;
 }
 
 function addTransaction() {
